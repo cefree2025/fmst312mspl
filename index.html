@@ -1,0 +1,624 @@
+
+<!DOCTYPE html>
+<!-- MSPL external-config build | 2025-08-10 08:05:00 | expects mspl_fall2025_config.json next to this file -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MSPL — Student Runner (v2)</title>
+<style>
+  :root{--bg:#f7f7fb;--card:#fff;--txt:#1f2430;--muted:#576076;--border:#e5e7ef;--accent:#0b6cff;--shadow:0 8px 24px rgba(0,0,0,.08);--r:16px;}
+  *{box-sizing:border-box} body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:linear-gradient(180deg,#f1f3f8,#f9fafb);color:var(--txt)}
+  .wrap{max-width:1000px;margin:28px auto;padding:0 16px} header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  h1{font-size:20px;margin:0} .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;margin:10px 0}
+  h2{font-size:16px;margin:0 0 8px} .muted{color:var(--muted);font-size:13px} .btn{border:1px solid var(--border);background:#fff;border-radius:12px;padding:10px 14px;font-weight:600;cursor:pointer}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff} .btn:disabled{opacity:.6;cursor:not-allowed}
+  .grid{display:grid;gap:12px} .grid.cols-2{grid-template-columns:1fr 1fr} .opt{border:1px solid var(--border);border-radius:12px;padding:12px;cursor:pointer;display:flex;align-items:flex-start;gap:10px}
+  .opt.disabled{opacity:.6;cursor:not-allowed} .meters{display:grid;gap:10px;grid-template-columns:1fr 1fr} @media(max-width:860px){.meters{grid-template-columns:1fr}}
+  .meter{background:#f1f5ff;border:1px solid #e0e7ff;border-radius:12px;padding:10px} .meter .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-weight:700}
+  .bar{height:10px;background:#e8ecf8;border-radius:999px;overflow:hidden;border:1px solid var(--border)} .fill{height:100%;width:50%;background:linear-gradient(90deg,#a5b4fc,#60a5fa)}
+  .pill{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--border);border-radius:999px;padding:4px 8px;font-size:12px;color:var(--muted)}
+  textarea{width:100%;min-height:120px;padding:10px;border:1px solid var(--border);border-radius:12px;font:inherit}
+  .right{display:flex;gap:8px;align-items:center} .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+  .opt input:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+  .delta-good{font-weight:700}
+  .sparkline{width:100%;height:40px}
+  .weekpill{display:inline-block;background:#eef2ff;border:1px solid #dde3ff;border-radius:999px;padding:2px 8px;font-size:12px;margin-right:6px}
+
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .chip{border:1px dashed var(--border);border-radius:999px;padding:2px 8px;font-size:11px;color:var(--muted);cursor:help;position:relative}
+  .chip:hover::after{
+    content: attr(data-tip);
+    position:absolute;left:0;top:120%;z-index:10;max-width:260px;
+    background:#111;color:#fff;padding:6px 8px;border-radius:8px;font-size:11px;
+    box-shadow:var(--shadow);white-space:normal
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>My So‑Called Parenting Life — Student (v2)</h1>
+    <div class="right"><label class="pill" title="Adds small ±1 randomness to some outcomes"><input type="checkbox" id="uncertaintyToggle"> uncertainty</label>
+      <button id="copyAll" class="btn">Copy run JSON</button>
+      <button id="exportBtn" class="btn">Export .json</button>
+      <input id="importInput" type="file" accept="application/json" class="sr-only"/>
+      <button id="importBtn" class="btn">Import</button><button id="resetBtn" class="btn">Reset progress</button>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>How this works</h2>
+    <p class="muted">Term‑long simulation aligned to weekly topics. For each scenario: (1) make a quick prediction, (2) choose, (3) review outcomes (meters + systems/mechanism), (4) short reflection linking to course concepts/systems. Save/export your summary for Canvas.</p><p class="muted"><strong>Meter meanings:</strong> Relationship = <em>parent–child relationship quality</em>; Support = <em>perceived + practical social support</em>; Parent/Child Stress = <em>lower is better</em>.</p>
+  </section>
+
+  <section id="weekHeader" class="card" aria-live="polite" style="padding:10px"></section>
+<section id="scenarioWrap" class="card"></section>
+
+  <section id="resultsWrap" class="card" style="display:none">
+    <h2>Outcome</h2>
+    <div id="outcomeText" class="muted"></div>
+    <div class="meters" id="meters"></div>
+    <div class="muted" id="systemsLine" style="margin-top:6px"></div>
+    <div class="muted" id="mechanismLine" style="margin-top:6px"></div>
+    <div id="conceptChips" style="margin-top:6px"></div>
+  </section>
+
+  <section id="reflectWrap" class="card" style="display:none">
+    <h2>Reflection (90–120 words)</h2>
+    <p class="muted">Name the <strong>most shifted</strong> variable and map it to a Bronfenbrenner layer. Add one determinant from lecture.</p>
+    <textarea id="reflection" placeholder="Write your short reflection here…"></textarea>
+    <div class="right" style="margin-top:8px">
+      <button id="nextBtn" class="btn primary">Save & Next</button>
+      <span class="pill">Progress: <span id="progress">0/0</span></span>
+    </div>
+  </section>
+
+  <section id="summaryWrap" class="card" style="display:none">
+    <h2>Summary for Canvas</h2>
+    <div id="summaryText" class="muted"></div>
+    <div class="right" style="margin-top:8px">
+      <button id="copyBtn" class="btn">Copy this summary</button>
+    </div>
+  </section>
+
+  <div class="muted" style="margin-top:8px">
+    <span class="pill">Variables: time, money, parent‑stress ↓, child‑stress ↓, relationship, support</span>
+    <span class="pill">No data leaves your device</span>
+  </div>
+</div>
+
+<script>
+
+
+// Concept glossary (short, classroom-safe)
+const GLOSSARY = {
+  "image of the child":"The assumptions you hold about children (competent vs fragile) that shape decisions.",
+  "autonomy-support":"Providing choice and rationale; supporting agency while setting limits.",
+  "macrosystem":"Cultural norms, policies, and ideologies shaping family life.",
+  "risk sensitivity":"Tendency to avoid potential harm, sometimes at a learning cost.",
+  "support networks":"Practical/emotional help from kin, peers, and community.",
+  "time poverty":"Chronic shortage of discretionary time due to work/care demands.",
+  "exosystem":"Settings that affect the family indirectly (e.g., a parent’s workplace).",
+  "community ties":"Place-based relationships that can provide support.",
+  "income volatility":"Unpredictable earnings that increase stress and reduce planning.",
+  "norms":"Shared expectations that influence approval/sanction of choices.",
+  "time cost":"Extra time required by a choice or routine.",
+  "care distribution":"Who does what in caregiving; division of labour.",
+  "flexibility":"Room to adapt routines or share roles to reduce friction.",
+  "coparenting":"How adult caregivers align on responsibilities and support one another.",
+  "ELCC access":"Availability/affordability of early learning and child care.",
+  "sleep training":"Structured methods to build self-soothing sleep.",
+  "self-soothing":"Child’s ability to settle without caregiver help.",
+  "co-regulation":"Adult and child regulate emotions together through connection and guidance.",
+  "co-sleeping":"Parent and child share a sleeping surface or room.",
+  "equity intervention":"Policy/program support that reduces structural barriers.",
+  "community agency":"Local services or nonprofits that provide support.",
+  "flexible work":"Workplace arrangements (e.g., compressed weeks, remote).",
+  "mental health":"Psychological wellbeing; treatment or supports to improve it.",
+  "policy support":"Benefits or programs created via law/regulation.",
+  "relocation":"Changing home to alter access to support/resources.",
+  "chronosystem":"The role of time and transitions across the lifespan.",
+  "evidence appraisal":"Judging research quality (design, sample, bias).",
+  "WEIRD sampling":"Bias when studies use Western, Educated, Industrialized, Rich, Democratic samples.",
+  "emotional labour":"Managing your own and others’ emotions; it takes effort/time.",
+  "social capital":"Resources gained from relationships and networks.",
+  "allyship":"Active support from others who help navigate systems.",
+  "methods":"Tools for studying questions (design, measures, sampling).",
+  "critical appraisal":"Questioning quality and applicability of evidence.",
+  "authority bias":"Overweighting claims from perceived authorities/influencers.",
+  "misinformation":"Inaccurate claims presented as fact.",
+  "emotion coaching":"Naming feelings, validating, and guiding regulation strategies.",
+  "public norms":"What bystanders expect; shapes feedback/support.",
+  "behaviourism":"Focus on observable behaviour and reinforcement/punishment.",
+  "predictable routines":"Consistent patterns that lower stress and aid learning.",
+  "scaffolding":"Support matched to current ability, faded over time.",
+  "care network":"A coordinated group of helpers (e.g., text thread).",
+  "risky play":"Challenging play with managed risk that builds competence.",
+  "policy advocacy":"Acting to change rules or practices.",
+  "gatekeeping":"Controlling access to people/experiences or information.",
+  "home supplementation":"Adding experiences at home to offset limits elsewhere.",
+  "school choice":"Selecting alternative schooling/childcare options.",
+  "media literacy":"Skills to analyze/evaluate media and algorithms.",
+  "monitoring":"Oversight of activities; can reduce risk or harm trust.",
+  "privacy risk":"Threats to control of personal information.",
+  "predictability":"Reliability of routines/schedules that reduce conflict.",
+  "guided participation":"Adult guides child through complex tasks.",
+  "pluralism":"Respecting exposure to diverse views/cultures.",
+  "school–home alliance":"Trust and collaboration between caregivers and educators.",
+  "directive request":"Asking for specific actions; may risk relationship.",
+  "opportunity cost":"What you give up when choosing an option.",
+  "mesosystem alliance":"Alignment between home and institutional partners.",
+  "early intervention":"Acting early to reduce later harm/costs.",
+  "information access":"Ability to get quality, timely information.",
+  "ability to pay":"Whether finances enable private options.",
+  "watchful waiting":"Monitoring without immediate action.",
+  "stigma":"Social disapproval that restricts participation.",
+  "cultural humility":"Reflective practice that respects cultural knowledge.",
+  "community clinician":"Health professional embedded in the community context.",
+  "financial shock":"Unexpected expense that disrupts budgets.",
+  "buffer":"Savings or supports that absorb shocks.",
+  "debt load":"Ongoing obligations that reduce flexibility.",
+  "expectation management":"Negotiating changed plans to reduce disappointment.",
+  "budgeting":"Planning spending to fit resources.",
+  "trade-offs":"Gains in one area that cost another.",
+  "labour market":"Job conditions and stability that shape family life.",
+  "evacuation planning":"Preparing where to go/how to coordinate in crises.",
+  "resilience":"Adapting and recovering under stress.",
+  "sheltering":"Using communal emergency accommodations.",
+  "crowding effects":"Stress from crowded environments.",
+  "risk tolerance":"Willingness to accept risk for potential benefit.",
+  "stress amplification":"Cascading stress from high-stakes choices.",
+  "preparedness":"Proactive planning that reduces risk.",
+  "role clarity":"Knowing who does what in a plan.",
+  "infrastructure":"Tools/resources that support function (e.g., batteries, data).",
+  "redundancy":"Backup systems to handle failures.",
+  "informal norms":"Unwritten rules that guide behaviour.",
+  "knowledge mobilization":"Translating research into action for audiences.",
+  "policy advocacy (KM)":"Engaging decision-makers with evidence.",
+  "community engagement":"Working directly with local groups/schools.",
+  "public communication":"Sharing for wide audiences in plain language.",
+  "privacy by design":"Building privacy into practices from the start.",
+  "reactance risk":"Backlash to perceived control or restriction.",
+  "trust":"Confidence in intentions/competence of others.",
+  "post-hoc repair":"Repairing after problems rather than preventing.",
+  "autonomy":"Emotional, behavioural, and value independence.",
+  "perspective-taking":"Trying to see from another’s viewpoint.",
+  "expectations":"Clear standards/rules communicated in advance.",
+  "behavioural autonomy":"Freedom to choose actions within boundaries.",
+  "cultural bridge":"Actions that connect across cultural practices.",
+  "belonging":"Feeling accepted and connected.",
+  "launching":"Transition to independent adulthood.",
+  "scaffolding withdrawal":"Reducing support as competence grows.",
+  "gradual autonomy":"Stepwise increase in independence.",
+  "safety nets":"Supports that catch failures (financial/social).",
+  "financial socialization":"Teaching money management and responsibility.",
+  "resource navigation":"Finding and using supports effectively.",
+  "peer support":"Practical/emotional aid from peers.",
+  "cost sharing":"Splitting expenses to reduce burden"
+};
+function chipsHTML(tags){
+  if(!tags || !tags.length) return '';
+  return '<div class="chips">' + tags.map(t => {
+    const tip = GLOSSARY[t] || ('No glossary entry for "'+t+'" yet.');
+    return `<span class="chip" tabindex="0" role="note" aria-label="${t}: ${tip}" data-tip="${tip}">${t}</span>`;
+  }).join('') + '</div>';
+}
+
+// Week mapping for UI labels
+const WEEK_OF = {
+  "BR":0,"IOC":0,"FD":1,"RTW":1,"SLP":2,"EQ":2,"CRT":3,"MTH":3,
+  "TAN":4,"HEC":4,"RISK":5,"EQ2":5,"TECH":5,"PEER":6,"SCH":6,
+  "DDX":7,"DSC":7,"EXP":8,"BGT":8,"EVAC":9,"COMMS":9,"KM":10,"ONLINE":10,"ID":10,"MOVE":11,"LSP":11
+};
+function weekOfScenario(sid){ const key = sid.split('_')[0]; return WEEK_OF[key] ?? null; }
+
+// Reflection cadence: micro by default; milestone on weeks 4,7,11
+function isMilestoneWeek(w){ return w===4 || w===7 || w===11; }
+function reflectionRequirements(week){
+  return isMilestoneWeek(week) ? {minWords:120, maxWords:180, label:"Milestone reflection (120–180 words)"} :
+                                 {minWords:20, maxWords:60, label:"Micro reflection (1–3 sentences)"};
+}
+
+// Simple non-crypto hash for run provenance
+function runHash(str){
+  let h=2166136261>>>0;
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h += (h<<1) + (h<<4) + (h<<7) + (h<<8) + (h<<24); }
+  return (h>>>0).toString(16);
+}
+
+// Sparkline generator
+function makeSpark(values){
+  const n = values.length; if(n===0) return '';
+  const max = 100, min = 0;
+  const w = 240, h = 40, pad = 2;
+  const step = (w - pad*2) / Math.max(1, n-1);
+  const ys = values.map(v => h - pad - ((v - min)/(max-min))*(h - pad*2));
+  const xs = values.map((_,i)=> pad + i*step);
+  const d = xs.map((x,i)=> (i===0?'M':'L') + x.toFixed(1) + ' ' + ys[i].toFixed(1)).join(' ');
+  return `<svg class="sparkline" viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>`;
+}
+
+// Embedded fallback config (replaced below)
+const FALL_EMBED = {"meta": {"title": "MSPL v2 — Fall 2025", "variables": ["time", "money", "parentStress", "childStress", "relationship", "support"], "stressKeys": ["parentStress", "childStress"], "startResources": {"time": 50, "money": 50, "parentStress": 50, "childStress": 50, "relationship": 50, "support": 50}}, "scenarios": [{"id": "BR", "title": "Week 0: Birth Record + Parent Profile", "context": "Choose one transparent context bundle (we use these to seed the six variables—none is 'better').", "precommitPrompt": "What strength do you predict will matter most in your family's first six months?", "options": [{"id": "BR_comm_rooted", "label": "Community‑rooted newcomers (shift work; strong kin)", "systems": ["Microsystem", "Mesosystem", "Exosystem (immigration/work)"], "deltas": {"time": -2, "money": -2, "parentStress": 2, "childStress": 1, "relationship": 0, "support": 4}, "mechanism": "Lower income + irregular hours tighten time/money; kin density boosts support.", "postFlags": {"context_comm": 1}}, {"id": "BR_dual_career", "label": "Dual‑career urban professionals (flex jobs; limited kin nearby)", "systems": ["Microsystem", "Exosystem (labour)"], "deltas": {"time": -3, "money": 3, "parentStress": 1, "childStress": 0, "relationship": 0, "support": -1}, "mechanism": "High earnings with time scarcity; thinner day‑to‑day support.", "postFlags": {"context_dual": 1}}, {"id": "BR_rural_gig", "label": "Rural gig‑economy (unstable income; strong community)", "systems": ["Microsystem", "Exosystem (labour)", "Macrosystem (rural norms)"], "deltas": {"time": -1, "money": -1, "parentStress": 1, "childStress": 0, "relationship": 0, "support": 2}, "mechanism": "Income volatility adds stress; place‑based ties add practical support.", "postFlags": {"context_rural": 1}}], "nextModifiers": [{"when": {"postFlag": "context_comm", "op": ">", "value": 0}, "apply": {"relationship": 2}}, {"when": {"postFlag": "context_dual", "op": ">", "value": 0}, "apply": {"time": -1}}, {"when": {"postFlag": "context_rural", "op": ">", "value": 0}, "apply": {"support": 1}}]}, {"id": "FD", "title": "Week 1: Feeding Method", "context": "You weigh breastfeeding, formula, or a combination while preparing return‑to‑work plans.", "precommitPrompt": "Which determinant (time, money, support, norms) will most constrain this decision?", "options": [{"id": "FD_bf", "label": "Exclusively breastfeed", "systems": ["Microsystem", "Mesosystem (work schedules)", "Macrosystem (norms)"], "deltas": {"time": -3, "money": 0, "parentStress": -2, "childStress": -1, "relationship": 0, "support": -1}, "mechanism": "Time‑intensive; can soothe infant; support may dip due to scrutiny or fatigue."}, {"id": "FD_formula", "label": "Exclusively formula", "systems": ["Microsystem", "Exosystem (costs)", "Macrosystem (norms)"], "deltas": {"time": 0, "money": -3, "parentStress": 0, "childStress": 0, "relationship": 0, "support": 1}, "mechanism": "Cost rises; caregiving shareable; some perceive more support via shared feeding."}, {"id": "FD_combo", "label": "Combination feeding", "systems": ["Microsystem", "Mesosystem"], "deltas": {"time": -1, "money": -1, "parentStress": -1, "childStress": 0, "relationship": 1, "support": 1}, "mechanism": "Shared caregiving + flexibility; modest costs/time; relationship supported."}], "nextModifiers": [{"when": {"postFlag": "context_dual", "op": ">", "value": 0}, "apply": {"time": -1}}, {"when": {"postFlag": "context_comm", "op": ">", "value": 0}, "apply": {"support": 1}}]}, {"id": "SLP", "title": "Week 2: Sleep Strategy", "context": "Night wakings surge. You must balance co‑regulation with restoring adult sleep.", "precommitPrompt": "Which variable will change most from your choice and why?", "options": [{"id": "SLP_train", "label": "Formal sleep training (graduated)", "systems": ["Microsystem"], "deltas": {"time": 1, "money": 0, "parentStress": -3, "childStress": 1, "relationship": 0, "support": 0}, "mechanism": "Faster adult sleep recovery; short‑term child dysregulation rises; parent stress falls.", "postFlags": {"selfSooth": 1}}, {"id": "SLP_shifts", "label": "No‑cry + parent shifts", "systems": ["Microsystem", "Mesosystem (work)"], "deltas": {"time": -2, "money": 0, "parentStress": -1, "childStress": -1, "relationship": 1, "support": 1}, "mechanism": "Shared load preserves co‑regulation; time cost; relationship/support benefit.", "postFlags": {"coregHabit": 1}}, {"id": "SLP_bedin", "label": "Bring baby into bed", "systems": ["Microsystem", "Macrosystem (norms/safety)"], "deltas": {"time": 1, "money": 0, "parentStress": 0, "childStress": -1, "relationship": 0, "support": -1}, "mechanism": "Eases infant distress; mixed public norms may reduce perceived support."}], "nextModifiers": [{"when": {"postFlag": "coregHabit", "op": ">", "value": 0}, "apply": {"childStress": -2, "relationship": 1}}, {"when": {"postFlag": "selfSooth", "op": ">", "value": 0}, "apply": {"parentStress": -1}}]}, {"id": "EQ", "title": "Week 2b: Equity Intervention Card (one‑time)", "context": "You may play ONE card to soften an early constraint. Choose wisely.", "precommitPrompt": "Which trade‑off are you willing to accept, and why?", "options": [{"id": "EQ_subsidy", "label": "Community subsidy (program + workshops)", "systems": ["Exosystem (community agencies)"], "deltas": {"time": -1, "money": 2, "parentStress": 1, "childStress": 0, "relationship": 0, "support": 2}, "mechanism": "Paperwork + workshops cost time; boosts money/support.", "postFlags": {"equityCardUsed": 1}}, {"id": "EQ_flexwork", "label": "Flexible work arrangement", "systems": ["Mesosystem (home–work)"], "deltas": {"time": 2, "money": -1, "parentStress": 1, "childStress": 0, "relationship": 0, "support": 0}, "mechanism": "Time expands; earnings dip; stress may rise from changes.", "postFlags": {"equityCardUsed": 1}}, {"id": "EQ_mhgrant", "label": "Parental mental‑health grant", "systems": ["Macrosystem (policy)"], "deltas": {"time": -1, "money": -1, "parentStress": 3, "childStress": 0, "relationship": 0, "support": 0}, "mechanism": "Appointments cost time/money; large stress relief over term.", "postFlags": {"equityCardUsed": 1}}, {"id": "EQ_reloc", "label": "Relocate near extended family", "systems": ["Mesosystem + Chronosystem"], "deltas": {"time": 0, "money": -1, "parentStress": 0, "childStress": 1, "relationship": -1, "support": 3}, "mechanism": "Transitions strain child/relationship; support net deepens.", "postFlags": {"equityCardUsed": 1}}]}, {"id": "CRT", "title": "Week 3: Challenging Theorists & Research Methods — Responding to Elder’s Critique", "context": "A family elder publicly critiques your feeding choice as ‘unhealthy’.", "precommitPrompt": "What evidence or lens will you lean on (methods, culture, lived authority)?", "options": [{"id": "CRT_advocate", "label": "Advocate respectfully with evidence", "systems": ["Macrosystem (knowledge norms)", "Mesosystem (family)"], "deltas": {"time": -1, "money": 0, "parentStress": 1, "childStress": 0, "relationship": 1, "support": 0}, "mechanism": "Takes time; relational respect can grow; stress from confrontation."}, {"id": "CRT_ignore", "label": "Let it pass (no engagement)", "systems": ["Microsystem", "Macrosystem"], "deltas": {"time": 1, "money": 0, "parentStress": 0, "childStress": 0, "relationship": -1, "support": -1}, "mechanism": "Saves time; may cool perceived support/relationship."}, {"id": "CRT_seekallies", "label": "Seek quiet allies", "systems": ["Mesosystem"], "deltas": {"time": -1, "money": 0, "parentStress": -1, "childStress": 0, "relationship": 0, "support": 1}, "mechanism": "Builds a supportive micro‑network; time cost."}]}, {"id": "TAN", "title": "Week 4: Social‑Emotional Dev. — Public tantrum", "context": "Your preschooler melts down at a grocery store.", "precommitPrompt": "Name one macrosystem factor that shapes bystander reactions.", "options": [{"id": "TAN_remove", "label": "Step outside to co‑regulate", "systems": ["Microsystem", "Exosystem (store norms)"], "deltas": {"time": -2, "money": 0, "parentStress": -2, "childStress": -2, "relationship": 1, "support": 0}, "mechanism": "Model co‑regulation; immediate time cost; stronger bond.", "postFlags": {"coregHabit": 1}}, {"id": "TAN_diffuse", "label": "Co‑regulate in place", "systems": ["Microsystem", "Macrosystem (public norms)"], "deltas": {"time": -3, "money": 0, "parentStress": -1, "childStress": -2, "relationship": 0, "support": -1}, "mechanism": "Takes longer; lowers child distress; public scrutiny hurts support.", "postFlags": {"coregHabit": 1}}, {"id": "TAN_ignore", "label": "Ignore and finish quickly", "systems": ["Microsystem", "Macrosystem"], "deltas": {"time": 1, "money": 0, "parentStress": 3, "childStress": 2, "relationship": -2, "support": -1}, "mechanism": "Saves time; stress and relationship strain rise.", "postFlags": {"coregHabit": -1}}], "nextModifiers": [{"when": {"postFlag": "coregHabit", "op": ">", "value": 0}, "apply": {"childStress": -2}}, {"when": {"postFlag": "coregHabit", "op": "<", "value": 0}, "apply": {"relationship": -1, "parentStress": 2}}]}, {"id": "RISK", "title": "Week 5a: Socialization — Risk‑play ban at daycare", "context": "Daycare bans ‘risky play’. You consider next steps.", "precommitPrompt": "Which system (micro→macro) is the main lever here?", "options": [{"id": "RISK_advocate", "label": "Advocate for policy revision", "systems": ["Mesosystem (parent board)", "Macrosystem (safety norms)"], "deltas": {"time": -2, "money": 0, "parentStress": -1, "childStress": -1, "relationship": 0, "support": 2}, "mechanism": "Time‑heavy; improves support/child regulation via better play.", "postFlags": {"riskAdv": 1}}, {"id": "RISK_comply", "label": "Comply + supplement at home", "systems": ["Microsystem"], "deltas": {"time": -1, "money": 0, "parentStress": 0, "childStress": 0, "relationship": 1, "support": 1}, "mechanism": "Moderate time; protects relationship; limited systemic change."}, {"id": "RISK_withdraw", "label": "Withdraw & re‑enrol in forest program", "systems": ["Exosystem (childcare market)"], "deltas": {"time": -1, "money": -2, "parentStress": 1, "childStress": -1, "relationship": 0, "support": 1}, "mechanism": "Costly; improves child experience; admin stress up.", "requires": [{"type": "resource", "key": "money", "op": ">=", "value": 40}]}]}, {"id": "TECH", "title": "Week 5b: Tech rules", "context": "Screens creep up. Discord/YouTube enter the chat.", "precommitPrompt": "What’s your principle: restriction, scheduling, or co‑created rules?", "options": [{"id": "TECH_coCreate", "label": "Open dialogue + co‑create rules", "systems": ["Microsystem", "Mesosystem (school/peers)", "Macrosystem (digital norms)"], "deltas": {"time": -1, "money": 0, "parentStress": -2, "childStress": 0, "relationship": 2, "support": 1}, "mechanism": "Trust‑building reduces conflict; some time cost.", "postFlags": {"techTrust": 1}, "modifiers": [{"when": {"postFlag": "coregHabit", "op": ">", "value": 0}, "apply": {"parentStress": -1}}, {"when": {"postFlag": "riskAdv", "op": ">", "value": 0}, "apply": {"support": 1}}]}, {"id": "TECH_restrict", "label": "Restrictive settings", "systems": ["Microsystem", "Macrosystem"], "deltas": {"time": -1, "money": 0, "parentStress": -1, "childStress": 0, "relationship": -1, "support": 0}, "mechanism": "Lower conflict now; risks secrecy later.", "postFlags": {"techTrust": -1}}, {"id": "TECH_schedule", "label": "Scheduled tech time", "systems": ["Microsystem"], "deltas": {"time": -1, "money": 0, "parentStress": -1, "childStress": 0, "relationship": 1, "support": 1}, "mechanism": "Predictability helps routines; light time cost."}]}, {"id": "PEER", "title": "Week 6: External Influences — Peer value conflict", "context": "Your child’s close friend promotes values you strongly oppose.", "precommitPrompt": "What outcome do you fear most? Why?", "options": [{"id": "PEER_restrict", "label": "Restrict interaction", "systems": ["Microsystem"], "deltas": {"time": 0, "money": 0, "parentStress": -1, "childStress": 1, "relationship": -1, "support": -1}, "mechanism": "Short‑term relief; child agency and trust may dip."}, {"id": "PEER_guided", "label": "Guided discussion + media literacy", "systems": ["Microsystem", "Mesosystem"], "deltas": {"time": -1, "money": 0, "parentStress": -1, "childStress": -1, "relationship": 2, "support": 1}, "mechanism": "Coached critical thinking strengthens bond; small time cost.", "postFlags": {"guidedTalk": 1}}, {"id": "PEER_expose", "label": "Exposure to diverse views", "systems": ["Macrosystem (pluralism)"], "deltas": {"time": -2, "money": 0, "parentStress": 0, "childStress": -1, "relationship": 1, "support": 1}, "mechanism": "Broadened contexts; heavier time lift."}]}, {"id": "DDX", "title": "Week 7: Disability & Mental Health — Assessment pathway", "context": "Teacher flags attention/learning concerns.", "precommitPrompt": "Which barrier matters most here (waitlists, stigma, cost, time)?", "options": [{"id": "DDX_team", "label": "Meet with teacher & support team", "systems": ["Mesosystem (school–home)", "Exosystem (education policy)"], "deltas": {"time": -2, "money": -1, "parentStress": -2, "childStress": -1, "relationship": 1, "support": 3}, "mechanism": "Alliance and plan reduce uncertainty; some costs/time.", "postFlags": {"schoolAlliance": 1}}, {"id": "DDX_private", "label": "Private exploration (observe; resources)", "systems": ["Microsystem", "Exosystem (info access)"], "deltas": {"time": -2, "money": -2, "parentStress": -1, "childStress": 0, "relationship": 0, "support": 0}, "mechanism": "Faster info if affordable; neutral support.", "requires": [{"type": "resource", "key": "money", "op": ">=", "value": 55}]}, {"id": "DDX_wait", "label": "Watch and wait", "systems": ["Microsystem", "Macrosystem (beliefs)"], "deltas": {"time": 1, "money": 0, "parentStress": 2, "childStress": 1, "relationship": -1, "support": -2}, "mechanism": "Saves time now; stress/support risks later.", "postFlags": {"schoolAlliance": -1}}]}, {"id": "EXP", "title": "Week 8: Family Resource Management — Vehicle breakdown", "context": "Car needs $1,500 in repairs right before a planned family trip.", "precommitPrompt": "Which resource will you sacrifice first?", "options": [{"id": "EXP_savings", "label": "Dip into savings", "systems": ["Microsystem", "Exosystem (finance)"], "deltas": {"time": 0, "money": -3, "parentStress": -1, "childStress": 0, "relationship": 0, "support": 0}, "mechanism": "Money down; stability preserved.", "postFlags": {"debt": 0}}, {"id": "EXP_loan", "label": "Take a high‑interest loan", "systems": ["Exosystem (credit markets)"], "deltas": {"time": 0, "money": -2, "parentStress": 1, "childStress": 0, "relationship": 0, "support": 0}, "mechanism": "Spreads cost but adds stress from debt.", "postFlags": {"debt": 2}}, {"id": "EXP_cancel", "label": "Cancel holiday plans", "systems": ["Microsystem"], "deltas": {"time": 1, "money": 1, "parentStress": 1, "childStress": 1, "relationship": -1, "support": 0}, "mechanism": "Saves money/time; strains relationship/child expectations."}]}, {"id": "EVAC", "title": "Week 9: Risk & Resilience — Natural‑disaster decision", "context": "A wildfire approaches. You must decide quickly.", "precommitPrompt": "Name one protective factor you already built earlier.", "options": [{"id": "EVAC_friends", "label": "Evacuate to friends/family", "systems": ["Mesosystem (kin/peers)"], "deltas": {"time": -2, "money": -1, "parentStress": -1, "childStress": -1, "relationship": 1, "support": 2}, "mechanism": "Social capital buffers stress/costs.", "postFlags": {"evacExp": 1}, "modifiers": [{"when": {"postFlag": "equityCardUsed", "op": ">", "value": 0}, "apply": {"support": 1}}]}, {"id": "EVAC_redcross", "label": "Red Cross centre", "systems": ["Exosystem (services)", "Macrosystem (policy)"], "deltas": {"time": -2, "money": 0, "parentStress": 0, "childStress": 1, "relationship": -1, "support": 1}, "mechanism": "Stable basics; crowding strains child/relationship."}, {"id": "EVAC_shelter", "label": "Shelter in place", "systems": ["Microsystem"], "deltas": {"time": 1, "money": 0, "parentStress": 3, "childStress": 2, "relationship": -2, "support": -1}, "mechanism": "Risk escalates; stress/relationship hit.", "postFlags": {"evacExp": -1}}]}, {"id": "ID", "title": "Week 10: Knowledge Mobilisation + Adolescent Autonomy — Belonging/identity rift", "context": "Teen explores an identity you don’t share; tension rises around cultural practices.", "precommitPrompt": "Which kind of autonomy (emotional/behavioural/value) is at stake?", "options": [{"id": "ID_dialogue", "label": "Open dialogue (listen first)", "systems": ["Microsystem"], "deltas": {"time": -1, "money": 0, "parentStress": -1, "childStress": -1, "relationship": 3, "support": 1}, "mechanism": "Perspective‑taking repairs trust.", "postFlags": {"bridge": 1}, "modifiers": [{"when": {"postFlag": "guidedTalk", "op": ">", "value": 0}, "apply": {"relationship": 1}}]}, {"id": "ID_rules", "label": "Set expectations/non‑negotiables", "systems": ["Microsystem", "Macrosystem (values)"], "deltas": {"time": 0, "money": 0, "parentStress": -1, "childStress": 1, "relationship": -2, "support": 0}, "mechanism": "Clarity reduces your stress; risks distance."}, {"id": "ID_symbol", "label": "Cultural bridge gesture", "systems": ["Macrosystem (culture)", "Mesosystem"], "deltas": {"time": -1, "money": -1, "parentStress": 0, "childStress": 0, "relationship": 1, "support": 1}, "mechanism": "Signals respect via action; small costs.", "postFlags": {"bridge": 1}}]}, {"id": "MOVE", "title": "Week 11: Parent–Adult transition — Move‑out decision", "context": "Young adult considers moving out amid high costs.", "precommitPrompt": "What principle guides you here (autonomy, security, culture, equity)?", "options": [{"id": "MOVE_push", "label": "Push independence (limited support)", "systems": ["Microsystem"], "deltas": {"time": 1, "money": 1, "parentStress": 0, "childStress": 1, "relationship": -2, "support": -2}, "mechanism": "Saves your resources; strains bond."}, {"id": "MOVE_coplan", "label": "Co‑plan launch with safety net", "systems": ["Microsystem", "Mesosystem (landlord/employers)"], "deltas": {"time": -1, "money": -1, "parentStress": -1, "childStress": -1, "relationship": 2, "support": 1}, "mechanism": "Shared planning boosts relationship; modest costs.", "modifiers": [{"when": {"postFlag": "debt", "op": ">=", "value": 2}, "apply": {"money": -1}}]}, {"id": "MOVE_nest", "label": "Maintain nest (stay longer)", "systems": ["Microsystem", "Macrosystem (housing market)"], "deltas": {"time": -1, "money": -2, "parentStress": -1, "childStress": -1, "relationship": 1, "support": 2}, "mechanism": "Buffers risk; costs money/time; can delay autonomy."}]}]};
+
+const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
+const deepCopy=(o)=>JSON.parse(JSON.stringify(o));
+
+function cmp(flagVal, op, value){
+  switch(op){
+    case ">": return flagVal > value;
+    case ">=": return flagVal >= value;
+    case "<": return flagVal < value;
+    case "<=": return flagVal <= value;
+    case "==": return flagVal == value;
+    case "!=": return flagVal != value;
+    default: return false;
+  }
+}
+
+let CONFIG = null;
+let state = { resources:{}, i:0, precommit:"", choices:[], flags:{}, meta:{} };
+
+const scenarioWrap = document.getElementById('scenarioWrap');
+const resultsWrap = document.getElementById('resultsWrap');
+const reflectWrap = document.getElementById('reflectWrap');
+const summaryWrap = document.getElementById('summaryWrap');
+const metersEl = document.getElementById('meters');
+const systemsLine = document.getElementById('systemsLine');
+const mechanismLine = document.getElementById('mechanismLine');
+const outcomeText = document.getElementById('outcomeText');
+const reflection = document.getElementById('reflection');
+const progress = document.getElementById('progress');
+const nextBtn = document.getElementById('nextBtn');
+const copyBtn = document.getElementById('copyBtn');
+const copyAll = document.getElementById('copyAll');
+const exportBtn = document.getElementById('exportBtn');
+const importBtn = document.getElementById('importBtn');
+const importInput = document.getElementById('importInput');
+const summaryText = document.getElementById('summaryText');
+
+
+function renderScenario(){
+  const s = CONFIG.scenarios[state.i];
+  if(!s){ return renderSummary(); }
+  const sid = s.id;
+  const wk = weekOfScenario(sid);
+  const total = CONFIG.scenarios.length;
+  document.getElementById('weekHeader').innerHTML = `<span class="weekpill">Week ${wk}</span> <strong>${s.title}</strong> · <span class="muted">Progress ${state.i}/${total}</span>`;
+  reflection.value = "";
+  const reqs = reflectionRequirements(wk);
+  document.querySelector('#reflectWrap h2').textContent = reqs.label;
+  const total2 = CONFIG.scenarios.length;
+  progress.textContent = `${state.i}/${total2}`;
+
+  const s = CONFIG.scenarios[state.i];
+  if(!s){ return renderSummary(); }
+  reflection.value = "";
+  const total = CONFIG.scenarios.length;
+  progress.textContent = `${state.i}/${total}`;
+
+  const opts = s.options.map((o,idx)=>{
+    let disabled = false; let why = "";
+    if(o.requires && Array.isArray(o.requires)){
+      for(const rq of o.requires){
+        if(rq.type === "resource"){
+          const val = state.resources[rq.key] ?? 0;
+          if(!cmp(val, rq.op, rq.value)){ disabled = true; why = `Requires ${rq.key} ${rq.op} ${rq.value}`; break; }
+        }else if(rq.type === "flag"){
+          const val = state.flags[rq.key] ?? 0;
+          if(!cmp(val, rq.op, rq.value)){ disabled = true; why = `Requires ${rq.key} ${rq.op} ${rq.value}`; break; }
+        }
+      }
+    }
+    return `
+      <label class="opt ${disabled?'disabled':''}" title="${why}">
+        <input type="radio" name="opt" value="${o.id}" ${disabled?'disabled':''}>
+        <div><strong>${String.fromCharCode(65+idx)}.</strong> ${o.label}${chipsHTML(o.tags||[])}</div>
+      </label>
+    `;
+  }).join('');
+
+  scenarioWrap.innerHTML = `
+    <h2>${s.title}</h2>
+    <p class="muted">${s.context}</p>
+    <label class="muted"><strong>Pre‑commit:</strong> ${s.precommitPrompt||''}</label>
+    <input id="precommitInput" style="width:100%;margin:6px 0 10px;padding:10px;border:1px solid var(--border);border-radius:12px;font:inherit" placeholder="One sentence…">
+    <div class="grid">${opts}</div>
+    <div class="right" style="margin-top:10px">
+      <button id="chooseBtn" class="btn primary">Choose</button>
+    </div>
+  `;
+  document.getElementById('chooseBtn').onclick = chooseOption;
+}
+
+function applyDeltas(base, deltas){
+  const out = {...base};
+  for(const k of CONFIG.meta.variables){
+    out[k] = clamp((out[k] + (deltas[k]||0)), 0, 100);
+  }
+  return out;
+}
+
+function chooseOption(){
+  const s = CONFIG.scenarios[state.i];
+  const selected = document.querySelector('input[name="opt"]:checked');
+  const precommit = (document.getElementById('precommitInput').value||"").trim();
+  if(!selected){ alert("Pick one option."); return; }
+  const opt = s.options.find(o => o.id === selected.value);
+
+  let deltas = {...opt.deltas};
+  if(opt.modifiers){
+    opt.modifiers.forEach(m => {
+      const v = state.flags[m.when.postFlag] || 0;
+      if(cmp(v, m.when.op, m.when.value)){
+        for(const k in m.apply){ deltas[k] = (deltas[k]||0) + m.apply[k]; }
+      }
+    });
+  }
+  const after = applyDeltas(state.resources, deltas);
+
+  state.choices.push({
+    scenarioId:s.id, optionId:opt.id, label:opt.label, precommit,
+    before:JSON.parse(JSON.stringify(state.resources)), change:JSON.parse(JSON.stringify(deltas)), after:JSON.parse(JSON.stringify(after)),
+    systems:opt.systems, mechanism:opt.mechanism
+  });
+
+  resultsWrap.style.display = "";
+  reflectWrap.style.display = "";
+  outcomeText.textContent = `You chose: ${opt.label}`;
+  systemsLine.textContent = `Systems: ${opt.systems.join(" · ")}`;
+  mechanismLine.textContent = `Mechanism: ${opt.mechanism}`;
+  document.getElementById('conceptChips').innerHTML = chipsHTML(opt.tags||[]);
+  renderMeters(after, deltas);
+
+  state.resources = JSON.parse(JSON.stringify(after));
+  if(opt.postFlags){
+    for(const k in opt.postFlags){
+      state.flags[k] = (state.flags[k]||0) + opt.postFlags[k];
+    }
+  }
+  if(s.nextModifiers){
+    s.nextModifiers.forEach(m => {
+      const v = state.flags[m.when.postFlag] || 0;
+      if(cmp(v, m.when.op, m.when.value)){
+        state.resources = applyDeltas(state.resources, m.apply);
+      }
+    });
+  }
+
+  nextBtn.onclick = () => {
+
+    const txt = (reflection.value||"").trim();
+    const wk = weekOfScenario(s.id);
+    const reqs = reflectionRequirements(wk);
+    const words = txt.split(/\s+/).filter(Boolean).length;
+    if(words < Math.floor(reqs.minWords/1)){ 
+      alert(`Please expand your reflection. Target: ${reqs.minWords}–${reqs.maxWords} words.`); 
+      return; 
+    }
+
+    state.choices[state.choices.length-1].reflection = txt;
+    state.i += 1;
+    saveLocal();
+    resultsWrap.style.display = "none";
+    reflectWrap.style.display = "none";
+    renderScenario();
+  };
+}
+
+
+function renderMeters(after, change){
+  const stressKeys = CONFIG.meta.stressKeys || [];
+  metersEl.innerHTML = CONFIG.meta.variables.map(k=>{
+    const v = after[k];
+    const pct = v;
+    const ch = change[k] || 0;
+    const beneficial = stressKeys.includes(k) ? (ch<0) : (ch>0);
+    const sign = ch===0 ? "±0" : (ch>0?`+${ch}`:`${ch}`);
+    const indicator = ch===0 ? "" : (beneficial ? " ✓" : " ✕");
+    const helper = stressKeys.includes(k) ? " (↓ good)" : "";
+    const name = k.replace(/([A-Z])/g,' $1').replace(/^./, s=>s.toUpperCase());
+    return `
+      <div class="meter">
+        <div class="row">
+          <div>${name}${helper}</div>
+          <div>${v}/100 <span class="muted">(${sign}${indicator})</span></div>
+        </div>
+        <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
+      </div>`;
+  }).join("");
+}
+  const stressKeys = CONFIG.meta.stressKeys || [];
+  metersEl.innerHTML = CONFIG.meta.variables.map(k=>{
+    const v = after[k];
+    const pct = v;
+    const ch = change[k] || 0;
+    const sign = ch===0 ? "±0" : (ch>0?`+${ch}`:`${ch}`);
+    const helper = stressKeys.includes(k) ? " (lower is better)" : "";
+    const name = k.replace(/([A-Z])/g,' $1').replace(/^./, s=>s.toUpperCase());
+    return `
+      <div class="meter">
+        <div class="row">
+          <div>${name}${helper}</div>
+          <div>${v}/100 <span class="muted">(${sign})</span></div>
+        </div>
+        <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
+      </div>`;
+  }).join("");
+}
+
+function renderSummary(){
+  scenarioWrap.style.display = "none";
+  resultsWrap.style.display = "none";
+  reflectWrap.style.display = "none";
+  summaryWrap.style.display = "";
+
+  const lines = [];
+  lines.push(`# MSPL Summary — ${CONFIG.meta.title||''}`);
+  lines.push(`Final resources:`);
+  lines.push(CONFIG.meta.variables.map(k=>{
+    const name = k.replace(/([A-Z])/g,' $1').replace(/^./, s=>s.toUpperCase());
+    const hint = (CONFIG.meta.stressKeys||[]).includes(k) ? " (lower is better)" : "";
+    return `• ${name}${hint}: ${state.resources[k]}/100`;
+  }).join("  "));
+
+  state.choices.forEach((c, idx)=>{
+    const s = CONFIG.scenarios.find(x=>x.id===c.scenarioId);
+    lines.push(`\n## ${idx+1}. ${s.title}`);
+    lines.push(`Pre‑commit: ${c.precommit||"(none)"}`);
+    lines.push(`Choice: ${c.label}`);
+    const before = CONFIG.meta.variables.map(k=>`${k}:${c.before[k]}`).join(" ");
+    const change = CONFIG.meta.variables.map(k=>`${k}:${c.change[k]||0}`).join(" ");
+    const after = CONFIG.meta.variables.map(k=>`${k}:${c.after[k]}`).join(" ");
+    lines.push(`Before: ${before}`);
+    lines.push(`Change: ${change}`);
+    lines.push(`After:  ${after}`);
+    lines.push(`Systems: ${c.systems.join(", ")}`);
+    lines.push(`Mechanism: ${c.mechanism}`);
+    lines.push(`Reflection: ${c.reflection||"(not entered)"}`);
+  });
+
+
+  // Append sparklines and run hash
+  lines.push("\n## Trajectories");
+  const traj = {};
+  CONFIG.meta.variables.forEach(k=> traj[k] = []);
+  state.choices.forEach(c => { CONFIG.meta.variables.forEach(k=> traj[k].push(c.after[k])); });
+  for(const k of CONFIG.meta.variables){
+    lines.push(`- ${k}: ${traj[k].join(" → ")}`);
+  }
+  const now = new Date().toISOString();
+  const provenance = runHash(now + '|' + (state.choices[0]?.optionId||'') + '|' + (state.choices[1]?.optionId||'') + '|' + (state.choices[2]?.optionId||'' ));
+  lines.push(`\n_Run ID:_ ${provenance} · _Timestamp:_ ${now}`);
+
+  const md = lines.join("\n");
+
+  summaryText.textContent = md;
+  // Also render inline sparklines visually below the summary
+  const vis = document.createElement('div'); vis.style.marginTop='10px';
+  vis.innerHTML = Object.keys(traj).map(k => `<div style="margin:6px 0"><div class="muted">${k}</div>${makeSpark(traj[k])}</div>`).join("");
+  summaryWrap.appendChild(vis);
+
+  document.getElementById('copyBtn').onclick = ()=>copy(md);
+}
+
+function copy(txt){
+  navigator.clipboard.writeText(txt).then(()=>{
+    alert("Copied to clipboard.");
+  }).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = txt; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); alert('Copied to clipboard.'); } finally { document.body.removeChild(ta); }
+  });
+}
+
+copyAll.onclick = ()=>{
+  const dump = JSON.stringify({config:CONFIG,state},null,2);
+  copy(dump);
+};
+
+exportBtn.onclick = ()=>{
+  saveLocal();
+  const blob = new Blob([JSON.stringify({config:CONFIG,state},null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'mspl_student_run_v2.json'; a.click(); URL.revokeObjectURL(a.href);
+};
+
+importBtn.onclick = ()=>importInput.click();
+const resetBtn = document.getElementById('resetBtn');
+resetBtn.onclick = ()=>{ if(confirm('Reset local progress?')){ state = { resources: JSON.parse(JSON.stringify(CONFIG.meta.startResources)), i:0, precommit:'', choices:[], flags:{}, meta:{} }; clearLocal(); renderScenario(); alert('Progress reset.'); } };
+importInput.onchange = (e)=>{
+  const file = e.target.files?.[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const data = JSON.parse(reader.result);
+      if(data.config) CONFIG = data.config;
+      if(data.state) state = data.state;
+      alert("Imported run.");
+      bootstrap();
+    }catch(err){ alert("Invalid file."); }
+  };
+  reader.readAsText(file); importInput.value = '';
+};
+
+
+async function loadExternalConfig(){
+  const version = (new URLSearchParams(location.search).get('v')) || (window.MSPL_VERSION || 'v2.4');
+  const url = 'mspl_fall2025_config.json' + '?v=' + encodeURIComponent(version);
+  try{
+    const res = await fetch(url, {cache:'no-store'});
+    if(!res.ok){ throw new Error('HTTP '+res.status); }
+    const json = await res.json();
+    // simple shape check
+    if(!json || !json.meta || !Array.isArray(json.scenarios) || json.scenarios.length===0){
+      throw new Error('Config JSON missing scenarios');
+    }
+    window.__MSPL_CONFIG_SOURCE__ = url;
+    return json;
+  }catch(err){
+    const msg = `Could not load ${url}. Upload mspl_fall2025_config.json next to index.html. Error: ${err.message}`;
+    console.error(msg);
+    alert(msg);
+    // Fallback: if a prior embedded config exists, try to return it; otherwise throw.
+    try{ if(typeof FALL_EMBED !== 'undefined' && FALL_EMBED && FALL_EMBED.scenarios?.length) { 
+      window.__MSPL_CONFIG_SOURCE__ = 'embedded fallback';
+      return FALL_EMBED; 
+    }}catch(_){}
+    throw err;
+  }
+}
+
+}
+
+function bootstrap(){
+  state = state || {};
+  state.i = state.i||0; state.flags = state.flags||{}; state.choices = state.choices||[];
+  const saved = loadLocal();
+  if(saved && saved.state){ state = saved.state; }
+  if(!state.resources || Object.keys(state.resources).length===0){
+    state.resources = JSON.parse(JSON.stringify(CONFIG.meta.startResources));
+  }
+  renderScenario();
+}
+
+(async function(){
+  CONFIG = await loadExternalConfig();
+  CONFIG.meta = CONFIG.meta || {variables:["time","money","parentStress","childStress","relationship","support"], stressKeys:["parentStress","childStress"], title:"MSPL v2"};
+  bootstrap();
+})();
+</script>
+<script>
+(function(){
+  const debug = new URLSearchParams(location.search).get('debug');
+  if(debug){
+    const b = document.createElement('div');
+    b.style.cssText = 'position:fixed;bottom:10px;right:10px;background:#111;color:#fff;padding:8px 10px;border-radius:8px;font-size:12px;z-index:9999;box-shadow:0 6px 20px rgba(0,0,0,.35)';
+    const src = (window.__MSPL_CONFIG_SOURCE__||'n/a');
+    b.textContent = 'MSPL debug • config source: ' + src;
+    setInterval(()=>{ b.textContent = 'MSPL debug • config source: ' + (window.__MSPL_CONFIG_SOURCE__||'n/a') + 
+      ' • scenarios: ' + (window.CONFIG?.scenarios?.length||0) + ' • i: ' + (window.state?.i||0); }, 700);
+    document.body.appendChild(b);
+  }
+})();
+</script>
+<script>
+(function(){
+  function addDiag(){
+    var b = document.createElement('div');
+    b.id = 'msplDiag';
+    b.style.cssText = 'position:fixed;bottom:10px;right:10px;background:#0b1020;color:#fff;padding:10px 12px;border-radius:10px;font-size:12px;z-index:9999;box-shadow:0 8px 28px rgba(0,0,0,.45)';
+    b.innerHTML = 'Loading...';
+    document.body.appendChild(b);
+    setInterval(function(){
+      var src = window.__MSPL_CONFIG_SOURCE__ || 'n/a';
+      var count = (window.CONFIG && window.CONFIG.scenarios && window.CONFIG.scenarios.length) ? window.CONFIG.scenarios.length : 0;
+      b.textContent = 'MSPL config source: ' + src + ' • scenarios: ' + count + ' • i: ' + (window.state && window.state.i || 0);
+    }, 600);
+  }
+  if(document.readyState !== 'loading') addDiag(); else document.addEventListener('DOMContentLoaded', addDiag);
+})();
+</script>
+</body>
+</html>
