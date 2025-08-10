@@ -1,0 +1,2593 @@
+{
+  "meta": {
+    "title": "MSPL v2 — Fall 2025",
+    "variables": [
+      "time",
+      "money",
+      "parentStress",
+      "childStress",
+      "relationship",
+      "support",
+      "coParentAlliance"
+    ],
+    "stressKeys": [
+      "parentStress",
+      "childStress"
+    ],
+    "startResources": {
+      "time": 50,
+      "money": 50,
+      "parentStress": 50,
+      "childStress": 50,
+      "relationship": 50,
+      "support": 50,
+      "coParentAlliance": 50
+    }
+  },
+  "scenarios": [
+    {
+      "id": "BR",
+      "title": "Week 0: Birth Record + Parent Profile",
+      "context": "Choose one transparent context bundle (we use these to seed the six variables—none is 'better').",
+      "precommitPrompt": "What strength do you predict will matter most in your family's first six months?",
+      "options": [
+        {
+          "id": "BR_comm_rooted",
+          "label": "Community‑rooted newcomers (shift work; strong kin)",
+          "systems": [
+            "Microsystem",
+            "Mesosystem",
+            "Exosystem (immigration/work)"
+          ],
+          "deltas": {
+            "time": -2,
+            "money": -2,
+            "parentStress": 2,
+            "childStress": 1,
+            "relationship": 0,
+            "support": 4,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Lower income + irregular hours tighten time/money; kin density boosts support.",
+          "postFlags": {
+            "context_comm": 1
+          },
+          "tags": [
+            "support networks",
+            "time poverty",
+            "exosystem"
+          ]
+        },
+        {
+          "id": "BR_dual_career",
+          "label": "Dual‑career urban professionals (flex jobs; limited kin nearby)",
+          "systems": [
+            "Microsystem",
+            "Exosystem (labour)"
+          ],
+          "deltas": {
+            "time": -3,
+            "money": 3,
+            "parentStress": 1,
+            "childStress": 0,
+            "relationship": 0,
+            "support": -1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "High earnings with time scarcity; thinner day‑to‑day support.",
+          "postFlags": {
+            "context_dual": 1
+          },
+          "tags": [
+            "time poverty",
+            "labour market",
+            "exosystem"
+          ]
+        },
+        {
+          "id": "BR_rural_gig",
+          "label": "Rural gig‑economy (unstable income; strong community)",
+          "systems": [
+            "Microsystem",
+            "Exosystem (labour)",
+            "Macrosystem (rural norms)"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": -1,
+            "parentStress": 1,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 2,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Income volatility adds stress; place‑based ties add practical support.",
+          "postFlags": {
+            "context_rural": 1
+          },
+          "tags": [
+            "community ties",
+            "income volatility",
+            "exosystem"
+          ]
+        }
+      ],
+      "nextModifiers": [
+        {
+          "when": {
+            "postFlag": "context_comm",
+            "op": ">",
+            "value": 0
+          },
+          "apply": {
+            "relationship": 2
+          }
+        },
+        {
+          "when": {
+            "postFlag": "context_dual",
+            "op": ">",
+            "value": 0
+          },
+          "apply": {
+            "time": -1
+          }
+        },
+        {
+          "when": {
+            "postFlag": "context_rural",
+            "op": ">",
+            "value": 0
+          },
+          "apply": {
+            "support": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "IOC",
+      "title": "Week 0: Image-of-the-Child self-audit",
+      "context": "Name the frame you bring into parenting; it will colour early interpretations.",
+      "precommitPrompt": "Which frame best describes your starting stance? Why might it change?",
+      "options": [
+        {
+          "id": "IOC_agentic",
+          "label": "Agentic/competent child view",
+          "systems": [
+            "Macrosystem (child image)",
+            "Microsystem"
+          ],
+          "deltas": {
+            "relationship": 2,
+            "support": 1,
+            "parentStress": -1,
+            "childStress": 0,
+            "time": 0,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Assumes capability; increases shared problem-solving.",
+          "postFlags": {
+            "agenticView": 1
+          },
+          "tags": [
+            "image of the child",
+            "autonomy-support",
+            "macrosystem"
+          ]
+        },
+        {
+          "id": "IOC_fragile",
+          "label": "Fragile/vulnerable child view",
+          "systems": [
+            "Macrosystem (child image)",
+            "Microsystem"
+          ],
+          "deltas": {
+            "relationship": 0,
+            "support": 0,
+            "parentStress": 1,
+            "childStress": 0,
+            "time": 0,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Caution rises; can increase vigilance and stress.",
+          "postFlags": {
+            "agenticView": -1
+          },
+          "tags": [
+            "image of the child",
+            "risk sensitivity",
+            "macrosystem"
+          ]
+        }
+      ],
+      "nextModifiers": [
+        {
+          "when": {
+            "postFlag": "agenticView",
+            "op": ">",
+            "value": 0
+          },
+          "apply": {
+            "relationship": 1
+          }
+        },
+        {
+          "when": {
+            "postFlag": "agenticView",
+            "op": "<",
+            "value": 0
+          },
+          "apply": {
+            "parentStress": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "FD",
+      "title": "Week 1: Feeding Method",
+      "context": "You weigh breastfeeding, formula, or a combination while preparing return‑to‑work plans.",
+      "precommitPrompt": "Which determinant (time, money, support, norms) will most constrain this decision?",
+      "options": [
+        {
+          "id": "FD_bf",
+          "label": "Exclusively breastfeed",
+          "systems": [
+            "Microsystem",
+            "Mesosystem (work schedules)",
+            "Macrosystem (norms)"
+          ],
+          "deltas": {
+            "time": -3,
+            "money": 0,
+            "parentStress": -2,
+            "childStress": -1,
+            "relationship": 0,
+            "support": -1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Time‑intensive; can soothe infant; support may dip due to scrutiny or fatigue.",
+          "tags": [
+            "norms",
+            "time cost",
+            "care distribution"
+          ]
+        },
+        {
+          "id": "FD_formula",
+          "label": "Exclusively formula",
+          "systems": [
+            "Microsystem",
+            "Exosystem (costs)",
+            "Macrosystem (norms)"
+          ],
+          "deltas": {
+            "time": 0,
+            "money": -3,
+            "parentStress": 0,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Cost rises; caregiving shareable; some perceive more support via shared feeding.",
+          "tags": [
+            "financial cost",
+            "care distribution",
+            "norms"
+          ]
+        },
+        {
+          "id": "FD_combo",
+          "label": "Combination feeding",
+          "systems": [
+            "Microsystem",
+            "Mesosystem"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": -1,
+            "parentStress": -1,
+            "childStress": 0,
+            "relationship": 1,
+            "support": 1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Shared caregiving + flexibility; modest costs/time; relationship supported.",
+          "tags": [
+            "flexibility",
+            "coparenting",
+            "mesosystem"
+          ]
+        }
+      ],
+      "nextModifiers": [
+        {
+          "when": {
+            "postFlag": "context_dual",
+            "op": ">",
+            "value": 0
+          },
+          "apply": {
+            "time": -1
+          }
+        },
+        {
+          "when": {
+            "postFlag": "context_comm",
+            "op": ">",
+            "value": 0
+          },
+          "apply": {
+            "support": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "RTW",
+      "title": "Week 1: Return-to-work plan",
+      "context": "Parental leave is ending. Choose a care plan that fits your context.",
+      "precommitPrompt": "What will be the bottleneck (time, money, support)?",
+      "options": [
+        {
+          "id": "RTW_care_share",
+          "label": "Shift-share with partner + neighbour swap",
+          "systems": [
+            "Mesosystem (home-work)",
+            "Exosystem (neighbourhood)"
+          ],
+          "deltas": {
+            "time": -2,
+            "money": 1,
+            "parentStress": -1,
+            "childStress": 0,
+            "relationship": 1,
+            "support": 2,
+            "coParentAlliance": 2
+          },
+          "mechanism": "Complex coordination but deepens support.",
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "context_comm",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "support": 1
+              }
+            }
+          ],
+          "tags": [
+            "care arrangement",
+            "social capital",
+            "mesosystem"
+          ]
+        },
+        {
+          "id": "RTW_centre",
+          "label": "Enroll in centre-based care",
+          "systems": [
+            "Exosystem (ELCC)",
+            "Macrosystem (policy)"
+          ],
+          "deltas": {
+            "time": 1,
+            "money": -2,
+            "parentStress": -1,
+            "childStress": 1,
+            "relationship": 0,
+            "support": 1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Reliable schedule; cost and child adjustment period.",
+          "tags": [
+            "ELCC access",
+            "adjustment period",
+            "exosystem"
+          ]
+        },
+        {
+          "id": "RTW_parental",
+          "label": "Extend leave (unpaid)",
+          "systems": [
+            "Exosystem (labour)"
+          ],
+          "deltas": {
+            "time": 2,
+            "money": -2,
+            "parentStress": -1,
+            "childStress": -1,
+            "relationship": 1,
+            "support": 0,
+            "coParentAlliance": 1
+          },
+          "mechanism": "Time increases; income drops.",
+          "tags": [
+            "time poverty",
+            "income trade-off",
+            "exosystem"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SLP",
+      "title": "Week 2: Sleep Strategy",
+      "context": "Night wakings surge. You must balance co‑regulation with restoring adult sleep.",
+      "precommitPrompt": "Which variable will change most from your choice and why?",
+      "options": [
+        {
+          "id": "SLP_train",
+          "label": "Formal sleep training (graduated)",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": 1,
+            "money": 0,
+            "parentStress": -3,
+            "childStress": 1,
+            "relationship": 0,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Faster adult sleep recovery; short‑term child dysregulation rises; parent stress falls.",
+          "postFlags": {
+            "selfSooth": 1
+          },
+          "tags": [
+            "sleep training",
+            "self-soothing",
+            "microsystem"
+          ]
+        },
+        {
+          "id": "SLP_shifts",
+          "label": "No‑cry + parent shifts",
+          "systems": [
+            "Microsystem",
+            "Mesosystem (work)"
+          ],
+          "deltas": {
+            "time": -2,
+            "money": 0,
+            "parentStress": -1,
+            "childStress": -1,
+            "relationship": 1,
+            "support": 1,
+            "coParentAlliance": 2
+          },
+          "mechanism": "Shared load preserves co‑regulation; time cost; relationship/support benefit.",
+          "postFlags": {
+            "coregHabit": 1
+          },
+          "tags": [
+            "co-regulation",
+            "coparenting",
+            "microsystem"
+          ]
+        },
+        {
+          "id": "SLP_bedin",
+          "label": "Bring baby into bed",
+          "systems": [
+            "Microsystem",
+            "Macrosystem (norms/safety)"
+          ],
+          "deltas": {
+            "time": 1,
+            "money": 0,
+            "parentStress": 0,
+            "childStress": -1,
+            "relationship": 0,
+            "support": -1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Eases infant distress; mixed public norms may reduce perceived support.",
+          "tags": [
+            "co-sleeping",
+            "norms",
+            "microsystem"
+          ]
+        }
+      ],
+      "nextModifiers": [
+        {
+          "when": {
+            "postFlag": "coregHabit",
+            "op": ">",
+            "value": 0
+          },
+          "apply": {
+            "childStress": -2,
+            "relationship": 1
+          }
+        },
+        {
+          "when": {
+            "postFlag": "selfSooth",
+            "op": ">",
+            "value": 0
+          },
+          "apply": {
+            "parentStress": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "EQ",
+      "title": "Week 2b: Equity Intervention Card (one‑time)",
+      "context": "You may play ONE card to soften an early constraint. Choose wisely.",
+      "precommitPrompt": "Which trade‑off are you willing to accept, and why?",
+      "options": [
+        {
+          "id": "EQ_subsidy",
+          "label": "Community subsidy (program + workshops)",
+          "systems": [
+            "Exosystem (community agencies)"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": 3,
+            "parentStress": 1,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 3,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Paperwork + workshops cost time; boosts money/support.",
+          "postFlags": {
+            "equityCardUsed": 1
+          },
+          "tags": [
+            "equity intervention",
+            "community agency",
+            "exosystem"
+          ]
+        },
+        {
+          "id": "EQ_flexwork",
+          "label": "Flexible work arrangement",
+          "systems": [
+            "Mesosystem (home–work)"
+          ],
+          "deltas": {
+            "time": 3,
+            "money": -2,
+            "parentStress": 2,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Time expands; earnings dip; stress may rise from changes.",
+          "postFlags": {
+            "equityCardUsed": 1
+          },
+          "tags": [
+            "flexible work",
+            "time-money trade-off",
+            "mesosystem"
+          ]
+        },
+        {
+          "id": "EQ_mhgrant",
+          "label": "Parental mental‑health grant",
+          "systems": [
+            "Macrosystem (policy)"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": -1,
+            "parentStress": 4,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Appointments cost time/money; large stress relief over term.",
+          "postFlags": {
+            "equityCardUsed": 1
+          },
+          "tags": [
+            "mental health",
+            "policy support",
+            "macrosystem"
+          ]
+        },
+        {
+          "id": "EQ_reloc",
+          "label": "Relocate near extended family",
+          "systems": [
+            "Mesosystem + Chronosystem"
+          ],
+          "deltas": {
+            "time": 0,
+            "money": -2,
+            "parentStress": 0,
+            "childStress": 1,
+            "relationship": -2,
+            "support": 4,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Transitions strain child/relationship; support net deepens.",
+          "postFlags": {
+            "equityCardUsed": 1
+          },
+          "tags": [
+            "relocation",
+            "kin support",
+            "chronosystem"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "CRT",
+      "title": "Week 3: Challenging Theorists & Research Methods — Responding to Elder’s Critique",
+      "context": "A family elder publicly critiques your feeding choice as ‘unhealthy’.",
+      "precommitPrompt": "What evidence or lens will you lean on (methods, culture, lived authority)?",
+      "options": [
+        {
+          "id": "CRT_advocate",
+          "label": "Advocate respectfully with evidence",
+          "systems": [
+            "Macrosystem (knowledge norms)",
+            "Mesosystem (family)"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": 0,
+            "parentStress": 1,
+            "childStress": 0,
+            "relationship": 1,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Takes time; relational respect can grow; stress from confrontation.",
+          "tags": [
+            "evidence appraisal",
+            "WEIRD sampling",
+            "macrosystem"
+          ]
+        },
+        {
+          "id": "CRT_ignore",
+          "label": "Let it pass (no engagement)",
+          "systems": [
+            "Microsystem",
+            "Macrosystem"
+          ],
+          "deltas": {
+            "time": 1,
+            "money": 0,
+            "parentStress": 0,
+            "childStress": 0,
+            "relationship": -1,
+            "support": -1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Saves time; may cool perceived support/relationship.",
+          "tags": [
+            "emotional labour",
+            "avoidance",
+            "microsystem"
+          ]
+        },
+        {
+          "id": "CRT_seekallies",
+          "label": "Seek quiet allies",
+          "systems": [
+            "Mesosystem"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": 0,
+            "parentStress": -1,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Builds a supportive micro‑network; time cost.",
+          "tags": [
+            "social capital",
+            "mesosystem",
+            "allyship"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "MTH",
+      "title": "Week 3: Research methods in the wild",
+      "context": "A blog cites a 'study' to justify a parenting rule.",
+      "precommitPrompt": "What will you scrutinize first?",
+      "options": [
+        {
+          "id": "MTH_design",
+          "label": "Check design and sample (WEIRD?)",
+          "systems": [
+            "Macrosystem (knowledge norms)"
+          ],
+          "deltas": {
+            "parentStress": -1,
+            "support": 1,
+            "relationship": 0,
+            "time": -1,
+            "money": 0,
+            "childStress": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Better filter reduces anxiety; time to read.",
+          "postFlags": {
+            "evidenceLit": 1
+          },
+          "tags": [
+            "methods",
+            "WEIRD sampling",
+            "critical appraisal"
+          ]
+        },
+        {
+          "id": "MTH_ignore",
+          "label": "Ignore (too busy)",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": 1,
+            "parentStress": 0,
+            "support": 0,
+            "relationship": 0,
+            "childStress": 0,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Saves time; no literacy gain.",
+          "tags": [
+            "time scarcity",
+            "opportunity cost"
+          ]
+        },
+        {
+          "id": "MTH_appeal",
+          "label": "Appeal to authority (influencer)",
+          "systems": [
+            "Macrosystem (authority)"
+          ],
+          "deltas": {
+            "time": 0,
+            "parentStress": 1,
+            "support": -1,
+            "relationship": 0,
+            "childStress": 0,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Unstable evidence can raise stress.",
+          "tags": [
+            "authority bias",
+            "misinformation"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TAN",
+      "title": "Week 4: Social‑Emotional Dev. — Public tantrum",
+      "context": "Your preschooler melts down at a grocery store.",
+      "precommitPrompt": "Name one macrosystem factor that shapes bystander reactions.",
+      "options": [
+        {
+          "id": "TAN_remove",
+          "label": "Step outside to co‑regulate",
+          "systems": [
+            "Microsystem",
+            "Exosystem (store norms)"
+          ],
+          "deltas": {
+            "time": -2,
+            "money": 0,
+            "parentStress": -2,
+            "childStress": -2,
+            "relationship": 1,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Model co‑regulation; immediate time cost; stronger bond.",
+          "postFlags": {
+            "coregHabit": 1
+          },
+          "tags": [
+            "emotion coaching",
+            "co-regulation",
+            "microsystem"
+          ]
+        },
+        {
+          "id": "TAN_diffuse",
+          "label": "Co‑regulate in place",
+          "systems": [
+            "Microsystem",
+            "Macrosystem (public norms)"
+          ],
+          "deltas": {
+            "time": -3,
+            "money": 0,
+            "parentStress": -1,
+            "childStress": -2,
+            "relationship": 0,
+            "support": -1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Takes longer; lowers child distress; public scrutiny hurts support.",
+          "postFlags": {
+            "coregHabit": 1
+          },
+          "tags": [
+            "emotion coaching",
+            "public norms"
+          ]
+        },
+        {
+          "id": "TAN_ignore",
+          "label": "Ignore and finish quickly",
+          "systems": [
+            "Microsystem",
+            "Macrosystem"
+          ],
+          "deltas": {
+            "time": 1,
+            "money": 0,
+            "parentStress": 3,
+            "childStress": 2,
+            "relationship": -2,
+            "support": -1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Saves time; stress and relationship strain rise.",
+          "postFlags": {
+            "coregHabit": -1
+          },
+          "tags": [
+            "behaviourism",
+            "short-term efficiency"
+          ]
+        }
+      ],
+      "nextModifiers": [
+        {
+          "when": {
+            "postFlag": "coregHabit",
+            "op": ">",
+            "value": 0
+          },
+          "apply": {
+            "childStress": -2
+          }
+        },
+        {
+          "when": {
+            "postFlag": "coregHabit",
+            "op": "<",
+            "value": 0
+          },
+          "apply": {
+            "relationship": -1,
+            "parentStress": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "HEC",
+      "title": "Week 4: Home emotion-coaching routine",
+      "context": "After the public tantrum, you plan a home routine.",
+      "precommitPrompt": "Which element will you prioritise first?",
+      "options": [
+        {
+          "id": "HEC_routine",
+          "label": "Predictable routine + visuals",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": -1,
+            "parentStress": -1,
+            "childStress": -2,
+            "relationship": 1,
+            "support": 0,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Structure reduces dysregulation.",
+          "postFlags": {
+            "emotionCoach": 1
+          },
+          "tags": [
+            "predictable routines",
+            "scaffolding"
+          ]
+        },
+        {
+          "id": "HEC_carecircle",
+          "label": "Set up a 'care circle' text thread",
+          "systems": [
+            "Mesosystem"
+          ],
+          "deltas": {
+            "time": -1,
+            "parentStress": -1,
+            "childStress": 0,
+            "relationship": 1,
+            "support": 2,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Increases perceived and practical support.",
+          "tags": [
+            "care network",
+            "social capital"
+          ]
+        },
+        {
+          "id": "HEC_solo",
+          "label": "Handle it solo for now",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": 0,
+            "parentStress": 1,
+            "childStress": 0,
+            "relationship": 0,
+            "support": -1,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Maintains privacy; increases load.",
+          "tags": [
+            "privacy",
+            "parent load"
+          ]
+        }
+      ],
+      "nextModifiers": [
+        {
+          "when": {
+            "postFlag": "emotionCoach",
+            "op": ">",
+            "value": 0
+          },
+          "apply": {
+            "childStress": -1
+          }
+        }
+      ]
+    },
+    {
+      "id": "RISK",
+      "title": "Week 5a: Socialization — Risk‑play ban at daycare",
+      "context": "Daycare bans ‘risky play’. You consider next steps.",
+      "precommitPrompt": "Which system (micro→macro) is the main lever here?",
+      "options": [
+        {
+          "id": "RISK_advocate",
+          "label": "Advocate for policy revision",
+          "systems": [
+            "Mesosystem (parent board)",
+            "Macrosystem (safety norms)"
+          ],
+          "deltas": {
+            "time": -2,
+            "money": 0,
+            "parentStress": -1,
+            "childStress": -1,
+            "relationship": 0,
+            "support": 2,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Time‑heavy; improves support/child regulation via better play.",
+          "postFlags": {
+            "riskAdv": 1
+          },
+          "tags": [
+            "risky play",
+            "policy advocacy",
+            "mesosystem"
+          ]
+        },
+        {
+          "id": "RISK_comply",
+          "label": "Comply + supplement at home",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": 0,
+            "parentStress": 0,
+            "childStress": 0,
+            "relationship": 1,
+            "support": 1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Moderate time; protects relationship; limited systemic change.",
+          "tags": [
+            "gatekeeping",
+            "home supplementation"
+          ]
+        },
+        {
+          "id": "RISK_withdraw",
+          "label": "Withdraw & re‑enrol in forest program",
+          "systems": [
+            "Exosystem (childcare market)"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": -2,
+            "parentStress": 1,
+            "childStress": -1,
+            "relationship": 0,
+            "support": 1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Costly; improves child experience; admin stress up.",
+          "requires": [
+            {
+              "type": "resource",
+              "key": "money",
+              "op": ">=",
+              "value": 40
+            }
+          ],
+          "tags": [
+            "school choice",
+            "exosystem"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EQ2",
+      "title": "Week 5: Equity card — second chance",
+      "context": "If you did not use your Equity Card earlier, you may play ONE now. If already used, choose 'Already used'.",
+      "precommitPrompt": "If you play it now, which constraint are you bending and why?",
+      "options": [
+        {
+          "id": "EQ2_subsidy",
+          "label": "Play card: Community subsidy",
+          "systems": [
+            "Exosystem (community)"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": 3,
+            "parentStress": 1,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 3,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Paperwork time; increases money/support.",
+          "requires": [
+            {
+              "type": "flag",
+              "key": "equityCardUsed",
+              "op": "<",
+              "value": 1
+            }
+          ],
+          "postFlags": {
+            "equityCardUsed": 1
+          },
+          "tags": [
+            "equity intervention",
+            "community agency"
+          ]
+        },
+        {
+          "id": "EQ2_flexwork",
+          "label": "Play card: Flexible work",
+          "systems": [
+            "Mesosystem (home–work)"
+          ],
+          "deltas": {
+            "time": 3,
+            "money": -2,
+            "parentStress": 2,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "More time with some stress and earnings hit.",
+          "requires": [
+            {
+              "type": "flag",
+              "key": "equityCardUsed",
+              "op": "<",
+              "value": 1
+            }
+          ],
+          "postFlags": {
+            "equityCardUsed": 1
+          },
+          "tags": [
+            "flexible work",
+            "time-money trade-off"
+          ]
+        },
+        {
+          "id": "EQ2_mhgrant",
+          "label": "Play card: Parental MH grant",
+          "systems": [
+            "Macrosystem (policy)"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": -1,
+            "parentStress": 4,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Appointments cost time/money; stress relief later.",
+          "requires": [
+            {
+              "type": "flag",
+              "key": "equityCardUsed",
+              "op": "<",
+              "value": 1
+            }
+          ],
+          "postFlags": {
+            "equityCardUsed": 1
+          },
+          "tags": [
+            "mental health",
+            "policy support"
+          ]
+        },
+        {
+          "id": "EQ2_reloc",
+          "label": "Play card: Relocate near family",
+          "systems": [
+            "Mesosystem + Chronosystem"
+          ],
+          "deltas": {
+            "time": 0,
+            "money": -2,
+            "parentStress": 0,
+            "childStress": 1,
+            "relationship": -2,
+            "support": 4,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Transitions strain but support deepens.",
+          "requires": [
+            {
+              "type": "flag",
+              "key": "equityCardUsed",
+              "op": "<",
+              "value": 1
+            }
+          ],
+          "postFlags": {
+            "equityCardUsed": 1
+          },
+          "tags": [
+            "relocation",
+            "kin support"
+          ]
+        },
+        {
+          "id": "EQ2_used",
+          "label": "Already used (no change)",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": 0,
+            "money": 0,
+            "parentStress": 0,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "No effect.",
+          "tags": [
+            "no change"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "TECH",
+      "title": "Week 5b: Early media rules (preschool/early school)",
+      "context": "Screens are creeping up — think tablets/TV/YouTube Kids. Set early habits; Discord comes later when the child is older.",
+      "precommitPrompt": "What principle guides your early media habits (restriction, scheduling, co-created family rules)?",
+      "options": [
+        {
+          "id": "TECH_coCreate",
+          "label": "Open dialogue + co‑create rules",
+          "systems": [
+            "Microsystem",
+            "Mesosystem (school/peers)",
+            "Macrosystem (digital norms)"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": 0,
+            "parentStress": -2,
+            "childStress": 0,
+            "relationship": 2,
+            "support": 1,
+            "coParentAlliance": 1
+          },
+          "mechanism": "Trust‑building reduces conflict; some time cost.",
+          "postFlags": {
+            "techTrust": 1
+          },
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "coregHabit",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "parentStress": -1
+              }
+            },
+            {
+              "when": {
+                "postFlag": "riskAdv",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "support": 1
+              }
+            }
+          ],
+          "tags": [
+            "media literacy",
+            "autonomy-support",
+            "microsystem"
+          ]
+        },
+        {
+          "id": "TECH_restrict",
+          "label": "Restrictive settings",
+          "systems": [
+            "Microsystem",
+            "Macrosystem"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": 0,
+            "parentStress": -1,
+            "childStress": 0,
+            "relationship": -1,
+            "support": 0,
+            "coParentAlliance": -1
+          },
+          "mechanism": "Lower conflict now; risks secrecy later.",
+          "postFlags": {
+            "techTrust": -1
+          },
+          "tags": [
+            "monitoring",
+            "privacy risk"
+          ]
+        },
+        {
+          "id": "TECH_schedule",
+          "label": "Scheduled tech time",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": 0,
+            "parentStress": -1,
+            "childStress": 0,
+            "relationship": 1,
+            "support": 1,
+            "coParentAlliance": 1
+          },
+          "mechanism": "Predictability helps routines; light time cost.",
+          "tags": [
+            "routines",
+            "predictability"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "PEER",
+      "title": "Week 6: External Influences — Peer value conflict",
+      "context": "Grade 2–4 peer brings home values you strongly oppose. You want to keep trust while setting boundaries.",
+      "precommitPrompt": "What outcome do you fear most? Why?",
+      "options": [
+        {
+          "id": "PEER_restrict",
+          "label": "Restrict interaction",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": 0,
+            "money": 0,
+            "parentStress": -1,
+            "childStress": 1,
+            "relationship": -1,
+            "support": -1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Short‑term relief; child agency and trust may dip.",
+          "tags": [
+            "gatekeeping",
+            "trust risk"
+          ]
+        },
+        {
+          "id": "PEER_guided",
+          "label": "Guided discussion + media literacy",
+          "systems": [
+            "Microsystem",
+            "Mesosystem"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": 0,
+            "parentStress": -1,
+            "childStress": -1,
+            "relationship": 2,
+            "support": 1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Coached critical thinking strengthens bond; small time cost.",
+          "postFlags": {
+            "guidedTalk": 1
+          },
+          "tags": [
+            "guided participation",
+            "media literacy",
+            "mesosystem"
+          ]
+        },
+        {
+          "id": "PEER_expose",
+          "label": "Exposure to diverse views",
+          "systems": [
+            "Macrosystem (pluralism)"
+          ],
+          "deltas": {
+            "time": -2,
+            "money": 0,
+            "parentStress": 0,
+            "childStress": -1,
+            "relationship": 1,
+            "support": 1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Broadened contexts; heavier time lift.",
+          "tags": [
+            "pluralism",
+            "scaffolded exposure"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SCH",
+      "title": "Week 6: School alignment note",
+      "context": "You consider emailing the teacher about the peer-value conflict.",
+      "precommitPrompt": "What tone do you choose?",
+      "options": [
+        {
+          "id": "SCH_collab",
+          "label": "Collaborative, curiosity-first",
+          "systems": [
+            "Mesosystem (school-home)"
+          ],
+          "deltas": {
+            "time": -1,
+            "support": 2,
+            "relationship": 1,
+            "parentStress": -1,
+            "childStress": 0,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Builds alliance; small time cost.",
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "guidedTalk",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            }
+          ],
+          "tags": [
+            "school–home alliance",
+            "mesosystem"
+          ]
+        },
+        {
+          "id": "SCH_direct",
+          "label": "Directive (request restrictions)",
+          "systems": [
+            "Mesosystem"
+          ],
+          "deltas": {
+            "time": -1,
+            "support": 0,
+            "relationship": -1,
+            "parentStress": 0,
+            "childStress": 0,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "May strain alliance; faster.",
+          "tags": [
+            "directive request",
+            "relationship risk"
+          ]
+        },
+        {
+          "id": "SCH_none",
+          "label": "No email",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": 1,
+            "support": -1,
+            "relationship": 0,
+            "parentStress": 0,
+            "childStress": 0,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Saves time; loses chance to align.",
+          "tags": [
+            "opportunity cost"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "DDX",
+      "title": "Week 7: Disability & Mental Health — Assessment pathway",
+      "context": "Teacher flags attention/learning concerns.",
+      "precommitPrompt": "Which barrier matters most here (waitlists, stigma, cost, time)?",
+      "options": [
+        {
+          "id": "DDX_team",
+          "label": "Meet with teacher & support team",
+          "systems": [
+            "Mesosystem (school–home)",
+            "Exosystem (education policy)"
+          ],
+          "deltas": {
+            "time": -3,
+            "money": -1,
+            "parentStress": -3,
+            "childStress": -2,
+            "relationship": 2,
+            "support": 4,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Alliance and plan reduce uncertainty; some costs/time.",
+          "postFlags": {
+            "schoolAlliance": 1
+          },
+          "tags": [
+            "mesosystem alliance",
+            "early intervention"
+          ]
+        },
+        {
+          "id": "DDX_private",
+          "label": "Private exploration (observe; resources)",
+          "systems": [
+            "Microsystem",
+            "Exosystem (info access)"
+          ],
+          "deltas": {
+            "time": -2,
+            "money": -3,
+            "parentStress": -1,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Faster info if affordable; neutral support.",
+          "requires": [
+            {
+              "type": "resource",
+              "key": "money",
+              "op": ">=",
+              "value": 55
+            }
+          ],
+          "tags": [
+            "information access",
+            "ability to pay"
+          ]
+        },
+        {
+          "id": "DDX_wait",
+          "label": "Watch and wait",
+          "systems": [
+            "Microsystem",
+            "Macrosystem (beliefs)"
+          ],
+          "deltas": {
+            "time": 1,
+            "money": 0,
+            "parentStress": 3,
+            "childStress": 2,
+            "relationship": -2,
+            "support": -3,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Saves time now; stress/support risks later.",
+          "postFlags": {
+            "schoolAlliance": -1
+          },
+          "tags": [
+            "watchful waiting",
+            "stigma risk"
+          ]
+        },
+        {
+          "id": "DDX_cultural",
+          "label": "Consult a culturally aligned clinician/elder + teacher triad",
+          "systems": [
+            "Mesosystem (community clinician)",
+            "Macrosystem (cultural lens)"
+          ],
+          "deltas": {
+            "time": -2,
+            "money": -1,
+            "parentStress": -2,
+            "childStress": -1,
+            "relationship": 1,
+            "support": 3,
+            "coParentAlliance": 1
+          },
+          "mechanism": "Shared cultural frame reduces stigma and improves alliance; small costs and coordination time.",
+          "postFlags": {
+            "schoolAlliance": 1
+          },
+          "tags": [
+            "cultural humility",
+            "community clinician"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "DSC",
+      "title": "Week 7: Disclosure plan",
+      "context": "You decide whether to disclose the assessment plan to your community.",
+      "precommitPrompt": "What matters most for your family here?",
+      "options": [
+        {
+          "id": "DSC_selective",
+          "label": "Selective disclosure to trusted adults",
+          "systems": [
+            "Mesosystem"
+          ],
+          "deltas": {
+            "support": 2,
+            "relationship": 1,
+            "parentStress": -1,
+            "childStress": 0,
+            "time": -1,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Gains targeted support; some time/coordination.",
+          "tags": [
+            "privacy",
+            "support seeking"
+          ]
+        },
+        {
+          "id": "DSC_open",
+          "label": "Open disclosure (class WhatsApp)",
+          "systems": [
+            "Mesosystem",
+            "Macrosystem (stigma)"
+          ],
+          "deltas": {
+            "support": 1,
+            "relationship": 0,
+            "parentStress": 0,
+            "childStress": 1,
+            "time": -1,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Wider net with risk to child comfort.",
+          "tags": [
+            "stigma",
+            "privacy risk"
+          ]
+        },
+        {
+          "id": "DSC_private",
+          "label": "Keep it private",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "support": -1,
+            "relationship": 0,
+            "parentStress": 0,
+            "childStress": 0,
+            "time": 1,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Protects privacy; reduces potential support.",
+          "tags": [
+            "privacy",
+            "self-reliance"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EXP",
+      "title": "Week 8: Family Resource Management — Vehicle breakdown",
+      "context": "Car needs $1,500 in repairs right before a planned family trip.",
+      "precommitPrompt": "Which resource will you sacrifice first?",
+      "options": [
+        {
+          "id": "EXP_savings",
+          "label": "Dip into savings",
+          "systems": [
+            "Microsystem",
+            "Exosystem (finance)"
+          ],
+          "deltas": {
+            "time": 0,
+            "money": -3,
+            "parentStress": -2,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Money down; stability preserved.",
+          "postFlags": {
+            "debt": 0
+          },
+          "tags": [
+            "financial shock",
+            "buffer"
+          ]
+        },
+        {
+          "id": "EXP_loan",
+          "label": "Take a high‑interest loan",
+          "systems": [
+            "Exosystem (credit markets)"
+          ],
+          "deltas": {
+            "time": 0,
+            "money": -2,
+            "parentStress": 2,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 0,
+            "coParentAlliance": -1
+          },
+          "mechanism": "Spreads cost but adds stress from debt.",
+          "postFlags": {
+            "debt": 2
+          },
+          "tags": [
+            "debt load",
+            "stress"
+          ]
+        },
+        {
+          "id": "EXP_cancel",
+          "label": "Cancel holiday plans",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": 1,
+            "money": 2,
+            "parentStress": 2,
+            "childStress": 1,
+            "relationship": -2,
+            "support": 0,
+            "coParentAlliance": -1
+          },
+          "mechanism": "Saves money/time; strains relationship/child expectations.",
+          "tags": [
+            "expectation management",
+            "relationship strain"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "BGT",
+      "title": "Week 8: Budget triage after car repair",
+      "context": "You must rebalance the monthly budget.",
+      "precommitPrompt": "Which lever will you pull first?",
+      "options": [
+        {
+          "id": "BGT_cut",
+          "label": "Cut discretionary spending",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "money": 1,
+            "parentStress": 1,
+            "relationship": -1,
+            "childStress": 0,
+            "time": 0,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Saves cash; possible conflict over cuts.",
+          "tags": [
+            "budgeting",
+            "trade-offs"
+          ]
+        },
+        {
+          "id": "BGT_extra",
+          "label": "Take extra shifts",
+          "systems": [
+            "Mesosystem (work)"
+          ],
+          "deltas": {
+            "time": -2,
+            "money": 1,
+            "parentStress": 1,
+            "relationship": -1,
+            "childStress": 0,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "More money; less time; stress up.",
+          "requires": [
+            {
+              "type": "resource",
+              "key": "time",
+              "op": ">=",
+              "value": 45
+            }
+          ],
+          "tags": [
+            "time-money trade-off",
+            "labour market"
+          ]
+        },
+        {
+          "id": "BGT_ask",
+          "label": "Ask kin for short-term loan",
+          "systems": [
+            "Mesosystem (kin)"
+          ],
+          "deltas": {
+            "money": 1,
+            "support": 1,
+            "relationship": 1,
+            "parentStress": -1,
+            "time": -1,
+            "childStress": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Relief via social capital; costs time to coordinate.",
+          "requires": [
+            {
+              "type": "resource",
+              "key": "support",
+              "op": ">=",
+              "value": 55
+            }
+          ],
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "debt",
+                "op": ">=",
+                "value": 2
+              },
+              "apply": {
+                "support": -1
+              }
+            }
+          ],
+          "tags": [
+            "social capital",
+            "kin support"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "EVAC",
+      "title": "Week 9: Risk & Resilience — Natural‑disaster decision",
+      "context": "A wildfire approaches. You must decide quickly.",
+      "precommitPrompt": "Name one protective factor you already built earlier.",
+      "options": [
+        {
+          "id": "EVAC_friends",
+          "label": "Evacuate to friends/family",
+          "systems": [
+            "Mesosystem (kin/peers)"
+          ],
+          "deltas": {
+            "time": -3,
+            "money": -2,
+            "parentStress": -5,
+            "childStress": -4,
+            "relationship": 3,
+            "support": 4,
+            "coParentAlliance": 1
+          },
+          "mechanism": "Social capital buffers stress/costs.",
+          "postFlags": {
+            "evacExp": 1
+          },
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "equityCardUsed",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "support": 1
+              }
+            }
+          ],
+          "tags": [
+            "evacuation planning",
+            "social capital",
+            "resilience"
+          ]
+        },
+        {
+          "id": "EVAC_redcross",
+          "label": "Red Cross centre",
+          "systems": [
+            "Exosystem (services)",
+            "Macrosystem (policy)"
+          ],
+          "deltas": {
+            "time": -2,
+            "money": 0,
+            "parentStress": 1,
+            "childStress": 3,
+            "relationship": -2,
+            "support": 3,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Stable basics; crowding strains child/relationship.",
+          "tags": [
+            "sheltering",
+            "crowding effects"
+          ]
+        },
+        {
+          "id": "EVAC_shelter",
+          "label": "Shelter in place",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": 2,
+            "money": 0,
+            "parentStress": 8,
+            "childStress": 6,
+            "relationship": -4,
+            "support": -3,
+            "coParentAlliance": -2
+          },
+          "mechanism": "Risk escalates; stress/relationship hit.",
+          "postFlags": {
+            "evacExp": -1
+          },
+          "tags": [
+            "risk tolerance",
+            "stress amplification"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "COMMS",
+      "title": "Week 9: Evacuation communication plan",
+      "context": "Smoke persists. You plan communication protocols with your teen.",
+      "precommitPrompt": "What’s the priority?",
+      "options": [
+        {
+          "id": "COMMS_roles",
+          "label": "Define roles and check-in times",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": -1,
+            "parentStress": -1,
+            "childStress": -1,
+            "relationship": 1,
+            "support": 1,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Predictability lowers stress.",
+          "tags": [
+            "preparedness",
+            "role clarity"
+          ]
+        },
+        {
+          "id": "COMMS_devices",
+          "label": "Buy backup battery + data plan",
+          "systems": [
+            "Exosystem (markets)"
+          ],
+          "deltas": {
+            "money": -1,
+            "time": 0,
+            "parentStress": -1,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Costs money; improves resilience.",
+          "tags": [
+            "infrastructure",
+            "redundancy"
+          ]
+        },
+        {
+          "id": "COMMS_informal",
+          "label": "Informal ‘text me when’",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": 0,
+            "parentStress": 0,
+            "childStress": 0,
+            "relationship": 0,
+            "support": 0,
+            "money": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Low effort; variable reliability.",
+          "tags": [
+            "informal norms"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ID",
+      "title": "Week 10: Knowledge Mobilisation + Adolescent Autonomy — Belonging/identity rift",
+      "context": "Teen explores an identity you don’t share; tension rises around cultural practices.",
+      "precommitPrompt": "Which kind of autonomy (emotional/behavioural/value) is at stake?",
+      "options": [
+        {
+          "id": "ID_dialogue",
+          "label": "Open dialogue (listen first)",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": 0,
+            "parentStress": -1,
+            "childStress": -1,
+            "relationship": 3,
+            "support": 1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Perspective‑taking repairs trust.",
+          "postFlags": {
+            "bridge": 1
+          },
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "guidedTalk",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            },
+            {
+              "when": {
+                "postFlag": "schoolAlliance",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            },
+            {
+              "when": {
+                "postFlag": "guidedTalk",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            }
+          ],
+          "tags": [
+            "autonomy",
+            "perspective-taking"
+          ]
+        },
+        {
+          "id": "ID_rules",
+          "label": "Set expectations/non‑negotiables",
+          "systems": [
+            "Microsystem",
+            "Macrosystem (values)"
+          ],
+          "deltas": {
+            "time": 0,
+            "money": 0,
+            "parentStress": -1,
+            "childStress": 1,
+            "relationship": -2,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Clarity reduces your stress; risks distance.",
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "schoolAlliance",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            },
+            {
+              "when": {
+                "postFlag": "guidedTalk",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            }
+          ],
+          "tags": [
+            "expectations",
+            "behavioural autonomy"
+          ]
+        },
+        {
+          "id": "ID_symbol",
+          "label": "Cultural bridge gesture",
+          "systems": [
+            "Macrosystem (culture)",
+            "Mesosystem"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": -1,
+            "parentStress": 0,
+            "childStress": 0,
+            "relationship": 1,
+            "support": 1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Signals respect via action; small costs.",
+          "postFlags": {
+            "bridge": 1
+          },
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "schoolAlliance",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            },
+            {
+              "when": {
+                "postFlag": "guidedTalk",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            }
+          ],
+          "tags": [
+            "cultural bridge",
+            "belonging"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "KM",
+      "title": "Week 10: Knowledge mobilization output",
+      "context": "You choose how to translate what you’ve learned for a real audience.",
+      "precommitPrompt": "Who needs this message most?",
+      "options": [
+        {
+          "id": "KM_letter",
+          "label": "Plain-language letter to a policymaker",
+          "systems": [
+            "Macrosystem (policy)"
+          ],
+          "deltas": {
+            "support": 2,
+            "relationship": 0,
+            "time": -1,
+            "money": 0,
+            "parentStress": 0,
+            "childStress": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Civic channel; boosts agency.",
+          "postFlags": {
+            "kmLetter": 1
+          },
+          "tags": [
+            "knowledge mobilization",
+            "policy advocacy"
+          ]
+        },
+        {
+          "id": "KM_school",
+          "label": "Workshop with school community",
+          "systems": [
+            "Mesosystem (school)"
+          ],
+          "deltas": {
+            "support": 3,
+            "relationship": 2,
+            "time": -2,
+            "money": 0,
+            "parentStress": 0,
+            "childStress": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Builds mesosystem ties; time cost.",
+          "tags": [
+            "community engagement",
+            "mesosystem"
+          ]
+        },
+        {
+          "id": "KM_thread",
+          "label": "Community thread / infographic",
+          "systems": [
+            "Exosystem (media access)"
+          ],
+          "deltas": {
+            "support": 2,
+            "relationship": 0,
+            "time": -1,
+            "money": 0,
+            "parentStress": 0,
+            "childStress": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Shares knowledge broadly without meeting logistics.",
+          "tags": [
+            "public communication",
+            "plain language"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ONLINE",
+      "title": "Week 10b: Teen online communities (Discord/YouTube)",
+      "context": "Your teen wants to join Discord servers and run a YouTube channel. You need boundaries that preserve trust and safety.",
+      "precommitPrompt": "Which risk are you most concerned about (privacy, time-sink, content), and which protective factor can you build?",
+      "options": [
+        {
+          "id": "ONLINE_cocreate",
+          "label": "Co-create server/channel rules + shared norms (periodic joint reviews)",
+          "systems": [
+            "Microsystem",
+            "Mesosystem (peers/school)",
+            "Macrosystem (digital norms)"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": 0,
+            "parentStress": -2,
+            "childStress": 0,
+            "relationship": 3,
+            "support": 1,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Autonomy-supportive boundaries strengthen trust; regular check-ins reduce conflict.",
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "guidedTalk",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            },
+            {
+              "when": {
+                "postFlag": "techTrust",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "parentStress": -1
+              }
+            },
+            {
+              "when": {
+                "postFlag": "schoolAlliance",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            },
+            {
+              "when": {
+                "postFlag": "guidedTalk",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            }
+          ],
+          "postFlags": {
+            "techTrust": 1
+          },
+          "tags": [
+            "autonomy-support",
+            "privacy by design",
+            "media literacy"
+          ]
+        },
+        {
+          "id": "ONLINE_monitor",
+          "label": "Install monitoring + hard time locks",
+          "systems": [
+            "Microsystem",
+            "Macrosystem (platform rules)"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": 0,
+            "parentStress": -1,
+            "childStress": 1,
+            "relationship": -3,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "External controls lower your uncertainty but risk secrecy and relational strain.",
+          "postFlags": {
+            "techTrust": -1
+          },
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "schoolAlliance",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            },
+            {
+              "when": {
+                "postFlag": "guidedTalk",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            }
+          ],
+          "tags": [
+            "monitoring",
+            "reactance risk"
+          ]
+        },
+        {
+          "id": "ONLINE_open",
+          "label": "Open trust + post-hoc debriefs (no pre-emptive controls)",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": 0,
+            "money": 0,
+            "parentStress": 0,
+            "childStress": 0,
+            "relationship": 1,
+            "support": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Signals respect; relies on existing trust; uneven protection if conflicts arise.",
+          "requires": [
+            {
+              "type": "resource",
+              "key": "relationship",
+              "op": ">=",
+              "value": 55
+            }
+          ],
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "schoolAlliance",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            },
+            {
+              "when": {
+                "postFlag": "guidedTalk",
+                "op": ">",
+                "value": 0
+              },
+              "apply": {
+                "relationship": 1
+              }
+            }
+          ],
+          "tags": [
+            "trust",
+            "post-hoc repair"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "MOVE",
+      "title": "Week 11: Parent–Adult transition — Move‑out decision",
+      "context": "Young adult considers moving out amid high costs.",
+      "precommitPrompt": "What principle guides you here (autonomy, security, culture, equity)?",
+      "options": [
+        {
+          "id": "MOVE_push",
+          "label": "Push independence (limited support)",
+          "systems": [
+            "Microsystem"
+          ],
+          "deltas": {
+            "time": 2,
+            "money": 2,
+            "parentStress": 0,
+            "childStress": 3,
+            "relationship": -5,
+            "support": -5,
+            "coParentAlliance": -1
+          },
+          "mechanism": "Saves your resources; strains bond.",
+          "tags": [
+            "launching",
+            "scaffolding withdrawal"
+          ]
+        },
+        {
+          "id": "MOVE_coplan",
+          "label": "Co‑plan launch with safety net",
+          "systems": [
+            "Microsystem",
+            "Mesosystem (landlord/employers)"
+          ],
+          "deltas": {
+            "time": -2,
+            "money": -2,
+            "parentStress": -3,
+            "childStress": -1,
+            "relationship": 4,
+            "support": 3,
+            "coParentAlliance": 1
+          },
+          "mechanism": "Shared planning boosts relationship; modest costs.",
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "debt",
+                "op": ">=",
+                "value": 2
+              },
+              "apply": {
+                "money": -1
+              }
+            }
+          ],
+          "tags": [
+            "scaffolding",
+            "gradual autonomy"
+          ]
+        },
+        {
+          "id": "MOVE_nest",
+          "label": "Maintain nest (stay longer)",
+          "systems": [
+            "Microsystem",
+            "Macrosystem (housing market)"
+          ],
+          "deltas": {
+            "time": -1,
+            "money": -2,
+            "parentStress": -1,
+            "childStress": -1,
+            "relationship": 1,
+            "support": 2,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Buffers risk; costs money/time; can delay autonomy.",
+          "tags": [
+            "safety nets",
+            "delay of autonomy"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "LSP",
+      "title": "Week 11: Launch support plan",
+      "context": "Alongside the move-out decision, you set a support structure.",
+      "precommitPrompt": "What’s your safety net?",
+      "options": [
+        {
+          "id": "LSP_cosign",
+          "label": "Co-sign + written budget",
+          "systems": [
+            "Mesosystem (finance/housing)"
+          ],
+          "deltas": {
+            "money": -1,
+            "relationship": 1,
+            "support": 2,
+            "time": -1,
+            "parentStress": -1,
+            "childStress": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Financial risk increases; clarity and support go up.",
+          "requires": [
+            {
+              "type": "resource",
+              "key": "money",
+              "op": ">=",
+              "value": 45
+            },
+            {
+              "type": "resource",
+              "key": "relationship",
+              "op": ">=",
+              "value": 50
+            },
+            {
+              "type": "resource",
+              "key": "coParentAlliance",
+              "op": ">=",
+              "value": 50
+            }
+          ],
+          "modifiers": [
+            {
+              "when": {
+                "postFlag": "debt",
+                "op": ">=",
+                "value": 2
+              },
+              "apply": {
+                "money": -1
+              }
+            }
+          ],
+          "tags": [
+            "financial socialization",
+            "safety net"
+          ]
+        },
+        {
+          "id": "LSP_microgrant",
+          "label": "Seek microgrant/community bursary",
+          "systems": [
+            "Exosystem (community)"
+          ],
+          "deltas": {
+            "money": 1,
+            "time": -1,
+            "support": 1,
+            "relationship": 0,
+            "parentStress": -1,
+            "childStress": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Paperwork time; reduces cost burden.",
+          "tags": [
+            "resource navigation",
+            "community support"
+          ]
+        },
+        {
+          "id": "LSP_peerflat",
+          "label": "Encourage peer flatshare",
+          "systems": [
+            "Mesosystem (peers)"
+          ],
+          "deltas": {
+            "money": 0,
+            "support": 1,
+            "relationship": 0,
+            "time": 0,
+            "parentStress": 0,
+            "childStress": 0,
+            "coParentAlliance": 0
+          },
+          "mechanism": "Distributes risk and support.",
+          "tags": [
+            "peer support",
+            "cost sharing"
+          ]
+        }
+      ]
+    }
+  ]
+}
